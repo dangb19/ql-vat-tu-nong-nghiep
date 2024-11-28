@@ -4,7 +4,7 @@ const inventory = require("../controllers/inventory.controller");
 
 const router = express.Router();
 
-router.route("/").get(inventory.findAll).post(inventory.create);
+router.route("/").get(inventory.getInventories).post(inventory.create);
 
 router
   .route("/:id")

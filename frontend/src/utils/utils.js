@@ -25,21 +25,17 @@ export function getDomainName(url) {
   return domain;
 }
 
-export const SORT_OPTIONS = [
-  { value: "newest", text: "Mới Nhất" },
-  { value: "oldest", text: "Cũ Nhất" },
-  { value: "name-ascending", text: "Tên: A-Z" },
-  { value: "name-descending", text: "Tên: Z-A" },
-  { value: "price-ascending", text: "Giá: Thấp" },
-  { value: "price-descending", text: "Giá: Cao" },
-  { value: "instock-ascending", text: "Tồn Kho: Ít" },
-  { value: "instock-descending", text: "Tồn Kho: Nhiều" },
-];
+export function formatDate(inputDate) {
+  // Chuyển đổi chuỗi date thành đối tượng Date
+  const date = new Date(inputDate);
 
-export const validSortOption = (sortQuery) => {
-  return SORT_OPTIONS.some((opt) => opt.value === sortQuery);
-};
+  // Lấy giờ, phút, ngày, tháng, năm
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // getMonth() trả về từ 0-11
+  const year = date.getFullYear();
 
-export const setDefaultSortOptionIfNotMatch = (sortQuery) => {
-  return validSortOption(sortQuery) ? sortQuery : SORT_OPTIONS[0].value;
-};
+  // Trả về chuỗi định dạng yêu cầu
+  return `${hours}:${minutes} ngày ${day}/${month}/${year}`;
+}

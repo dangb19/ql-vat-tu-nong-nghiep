@@ -14,7 +14,6 @@ const product = reactive({
   manufacturer: "",
   supplier: "",
   price: "",
-  costPrice: "",
   stockQuantity: "",
   discount: "",
   imageUrls: [],
@@ -74,13 +73,6 @@ watchEffect(fetchDatas);
         />
         <Input
           type="number"
-          name="costPrice"
-          placeholder="giá nhập"
-          v-model="product.costPrice"
-          required
-        />
-        <Input
-          type="number"
           name="price"
           placeholder="giá bán"
           v-model="product.price"
@@ -109,6 +101,7 @@ watchEffect(fetchDatas);
           name="category"
           v-model="product.category"
           placeholder="danh mục"
+          required
           class="bg-yellow-100 py-3 px-4 text-gray-800 placeholder:text-gray-600 outline-none focus:outline-yellow-400 rounded-md"
         >
           <option disabled value="">chọn danh mục</option>
@@ -126,6 +119,7 @@ watchEffect(fetchDatas);
           name="manufacturer"
           v-model="product.manufacturer"
           placeholder="nhà sản xuất"
+          required
           class="bg-yellow-100 py-3 px-4 text-gray-800 placeholder:text-gray-600 outline-none focus:outline-yellow-400 rounded-md"
         >
           <option disabled value="">chọn nhà sản xuất</option>
@@ -143,6 +137,7 @@ watchEffect(fetchDatas);
           name="supplier"
           v-model="product.supplier"
           placeholder="nhà cung cấp"
+          required
           class="bg-yellow-100 py-3 px-4 text-gray-800 placeholder:text-gray-600 outline-none focus:outline-yellow-400 rounded-md"
         >
           <option disabled value="">chọn nhà cung cấp</option>
@@ -159,6 +154,7 @@ watchEffect(fetchDatas);
           name="imageUrls"
           placeholder="url hình ảnh"
           v-model="product.imageUrls[0]"
+          classes="col-span-2"
           required
         />
         <textarea

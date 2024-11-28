@@ -31,6 +31,10 @@ class ProductService {
     return (await this.api.get(`/product-info`)).data;
   }
 
+  async getProductStats() {
+    return (await this.api.get(`/product-stats`)).data;
+  }
+
   async get(id) {
     return (await this.api.get(`/${id}`)).data;
   }

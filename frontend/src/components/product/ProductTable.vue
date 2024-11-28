@@ -74,16 +74,6 @@ const closeModal = () => (show.value = false);
             </th>
             <th
               class="border border-gray-300 px-4 py-2 text-left cursor-pointer"
-              @click="changeSortFieldAndOrder('costPrice')"
-            >
-              Giá nhập
-              <span class="text-gray-600">
-                <span v-if="sortOrder === 'asc'">&#129129;</span
-                ><span v-else>&#129131;</span>
-              </span>
-            </th>
-            <th
-              class="border border-gray-300 px-4 py-2 text-left cursor-pointer"
               @click="changeSortFieldAndOrder('price')"
             >
               Giá bán
@@ -123,9 +113,6 @@ const closeModal = () => (show.value = false);
             </td>
             <td class="border border-gray-300 px-4 py-2 break-words">
               {{ product.name }}
-            </td>
-            <td class="border border-gray-300 px-4 py-2 break-words">
-              {{ product.costPrice }}
             </td>
             <td class="border border-gray-300 px-4 py-2 text-center">
               {{ product.price }}

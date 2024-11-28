@@ -82,3 +82,93 @@ exports.delete = async (req, res, next) => {
     );
   }
 };
+
+exports.getInventories = async (req, res, next) => {
+  const {
+    sortField = "name",
+    sortOrder = "asc",
+    page = 1,
+    limit = 10,
+    q = "",
+  } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
+
+  // Tạo điều kiện tìm kiếm
+  const searchCriteria = q
+    ? {
+        $or: [{ name: { $regex: q, $options: "i" } }],
+      }
+    : {};
+
+  // Tạo điều kiện sắp xếp
+  const sortOptions = { [sortField]: sortOrder === "asc" ? 1 : -1 };
+
+  try {
+    const inventoryService = new InventoryService(MongoDB.client);
+
+    // Aggregation pipeline
+    const pipeline = [
+      // Match search criteria
+      { $match: searchCriteria },
+      // Lookup discount details
+      {
+        $lookup: {
+          from: "product",
+          localField: "product",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+      {
+        $lookup: {
+          from: "user",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdByInfo",
+        },
+      },
+      {
+        $lookup: {
+          from: "supplier",
+          localField: "supplier",
+          foreignField: "_id",
+          as: "supplierInfo",
+        },
+      },
+      {
+        $project: {
+          date: 1,
+          quantity: 1,
+          totalCost: 1,
+          "productInfo.name": 1,
+          "createdByInfo.name": 1,
+          "supplierInfo.name": 1,
+        },
+      },
+      { $sort: sortOptions },
+      { $skip: skip },
+      { $limit: limitNum },
+    ];
+
+    const documents = await inventoryService.Collection.aggregate(
+      pipeline
+    ).toArray();
+
+    const total = await inventoryService.Collection.countDocuments(
+      searchCriteria
+    );
+
+    return res.send({
+      inventories: documents,
+      total,
+    });
+  } catch (error) {
+    console.error("Error retrieving products:", error);
+    return next(
+      new ApiError(500, "An error occurred while retrieving products")
+    );
+  }
+};

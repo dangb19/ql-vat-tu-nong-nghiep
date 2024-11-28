@@ -8,9 +8,11 @@ class Inventory extends AppService {
   extractData(payload) {
     const inventory = {
       product: payload.product,
-      stockQuantity: payload.stockQuantity,
-      warehouse: payload.warehouse,
-      transactions: payload.transactions,
+      quantity: payload.quantity,
+      createdBy: payload.createdBy,
+      totalCost: payload.totalCost,
+      date: payload.date,
+      supplier: payload.supplier,
     };
 
     Object.keys(inventory).forEach((key) => {

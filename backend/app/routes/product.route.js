@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.route("/").get(product.getProducts).post(product.create);
 router.route("/product-info").get(product.getProductInfo);
+router.route("/product-stats").get(product.countProductStats);
 
 router
   .route("/:id")

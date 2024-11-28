@@ -3,16 +3,14 @@ const AppService = require("./app.service");
 class Discount extends AppService {
   constructor(client) {
     super(client, "discount");
+    console.log(this);
     this.createTTLIndex();
   }
 
   async createTTLIndex() {
     try {
-      // Đảm bảo collection đã được tạo
-      const collection = this.client.db().collection("discount");
-
       // Tạo TTL index trên trường `endDate` với expireAfterSeconds là 0
-      await collection.createIndex(
+      await this.Collection.createIndex(
         { endDate: 1 }, // Tạo index tăng dần
         { expireAfterSeconds: 0 } // Xóa tài liệu ngay khi `endDate` đến
       );

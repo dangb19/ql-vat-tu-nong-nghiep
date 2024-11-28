@@ -15,18 +15,21 @@ exports.create = async (req, res, next) => {
   try {
     const productService = new ProductService(MongoDB.client);
 
-    const document = await productService.create({
+    const product = {
       name: req.body.name,
       category: convertToObjectId(req.body.category),
       manufacturer: convertToObjectId(req.body.manufacturer),
       supplier: convertToObjectId(req.body.supplier),
       discount: convertToObjectId(req.body.discount),
       price: new Double(req.body.price),
-      costPrice: new Double(req.body.costPrice),
       stockQuantity: parseInt(req.body.stockQuantity, 10),
       imageUrls: req.body.imageUrls,
       description: req.body.description,
-    });
+    };
+
+    const document = await productService.create(
+      productService.extractData(product)
+    );
 
     return res.send(document);
   } catch (error) {
@@ -219,5 +222,44 @@ exports.delete = async (req, res, next) => {
     return next(
       new ApiError(500, `Could not delete doc with id=${req.params.id}`)
     );
+  }
+};
+
+exports.countProductStats = async (req, res, next) => {
+  try {
+    const pipeline = [
+      {
+        $facet: {
+          totalProducts: [{ $count: "count" }], // Đếm tổng số sản phẩm
+          outOfStock: [
+            { $match: { stockQuantity: 0 } },
+            { $count: "count" }, // Đếm sản phẩm hết hàng
+          ],
+          lowStock: [
+            { $match: { stockQuantity: { $gt: 0, $lt: 10 } } },
+            { $count: "count" }, // Đếm sản phẩm sắp hết hàng
+          ],
+        },
+      },
+      {
+        $project: {
+          totalProducts: { $arrayElemAt: ["$totalProducts.count", 0] },
+          outOfStock: { $arrayElemAt: ["$outOfStock.count", 0] },
+          lowStock: { $arrayElemAt: ["$lowStock.count", 0] },
+        },
+      },
+    ];
+
+    const productService = new ProductService(MongoDB.client);
+
+    const result = await productService.Collection.aggregate(
+      pipeline
+    ).toArray();
+
+    console.log(result);
+    return res.send(result[0]);
+  } catch (error) {
+    console.error("Error counting product stats:", error);
+    throw error;
   }
 };

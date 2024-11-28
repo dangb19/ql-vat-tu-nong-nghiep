@@ -39,12 +39,6 @@ watchEffect(async () => {
         <!-- price -->
         <div class="text-2xl flex justify-between">
           <h2 class="my-5 text-center xl:text-left">
-            <span>Giá nhập: </span>
-            <span class="text-gray-600">{{
-              formatCurrency(product.costPrice)
-            }}</span>
-          </h2>
-          <h2 class="my-5 text-center xl:text-left">
             <span>Giá bán: </span>
             <span class="text-gray-600">{{
               formatCurrency(product.price)
@@ -71,10 +65,11 @@ watchEffect(async () => {
         <div class="flex justify-between items-center gap-4 mt-4 text-lg">
           <div class="flex flex-wrap gap-2 grow items-center">
             <h3>Mã giảm giá:</h3>
-            <p class="text-gray-600">
+            <p class="text-gray-600" v-if="product.discountInfo[0]">
               {{ product.discountInfo[0].discountPercentage + "%" }} -
               {{ product.discountInfo[0].name }}
             </p>
+            <p v-else class="text-gray-600">không</p>
           </div>
           <div>
             <Link route-name="login" class="text-lg text-main"

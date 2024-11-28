@@ -15,10 +15,10 @@ const store = useAuthStore();
     <!-- Dropdown quản lý -->
     <Dropdown />
     <li @click="$emit('closeMenu')">
-      <Link route-name="">Thống kê</Link>
+      <Link route-name="home">Thống kê</Link>
     </li>
     <li @click="$emit('closeMenu')">
-      <Link route-name="">Đơn hàng</Link>
+      <Link route-name="home">Đơn hàng</Link>
     </li>
     <li v-if="!store.isLoggedIn" @click="$emit('closeMenu')">
       <LinkButton route-name="login">Đăng nhập</LinkButton>

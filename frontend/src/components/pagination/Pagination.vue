@@ -4,7 +4,7 @@ import PagButtons from "./PagButtons.vue";
 
 const emit = defineEmits(["onPageChange"]);
 const props = defineProps({
-  totalItems: Array,
+  totalItems: Number,
   itemsPerPage: Number,
 });
 
@@ -15,12 +15,6 @@ const changeCurrentPage = (newPage) => {
   emit("onPageChange", newPage);
   currentPage.value = newPage;
 };
-
-// Reset currentPage if items change
-// watch(
-//   () => props.items,
-//   () => (currentPage.value = 1)
-// );
 </script>
 
 <template>
