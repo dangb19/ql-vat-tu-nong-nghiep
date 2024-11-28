@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary rounded-md text-center text-gray-700 font-semibold;
+  }
+  .pagination-item {
+    @apply size-8 sm:size-10 rounded-full bg-transparent border border-main-700 text-gray-500 duration-200;
+  }
+}
+
+@layer utilities {
+  .bg-primary {
+    @apply bg-yellow-200;
+  }
+  .pagination-gap {
+    @apply gap-1 sm:gap-2;
+  }
+}
