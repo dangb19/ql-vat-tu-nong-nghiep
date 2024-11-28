@@ -36,6 +36,10 @@ class UserService extends AppService {
 
     return result;
   }
+
+  async findByEmail(email) {
+    return await this.Collection.findOne({ email });
+  }
 }
 
 module.exports = UserService;

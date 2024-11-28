@@ -1,7 +1,6 @@
 import { createWebHistory, createRouter } from "vue-router";
 import HomePage from "../views/HomePage.vue";
 import ProfilePage from "../views/ProfilePage.vue";
-import EditProfilePage from "../views/EditProfilePage.vue";
 import LoginPage from "../views/LoginPage.vue";
 import SignupPage from "../views/SignupPage.vue";
 import ProductDetailsPage from "../views/ProductDetailsPage.vue";
@@ -27,6 +26,9 @@ import ManufacturerCreatePage from "../views/ManufacturerCreatePage.vue";
 import ManufacturerUpdatePage from "../views/ManufacturerUpdatePage.vue";
 import SupplierCreatePage from "../views/SupplierCreatePage.vue";
 import SupplierUpdatePage from "../views/SupplierUpdatePage.vue";
+import ProfileUpdatePage from "../views/ProfileUpdatePage.vue";
+import ReportPage from "../views/ReportPage.vue";
+import OrderPage from "../views/OrderPage.vue";
 
 const routes = [
   {
@@ -208,13 +210,23 @@ const routes = [
       },
 
       {
-        path: "edit",
-        name: "profile-edit",
-        component: EditProfilePage,
+        path: "update",
+        name: "profile-update",
+        component: ProfileUpdatePage,
       },
     ],
   },
 
+  {
+    path: "/order",
+    name: "order",
+    component: OrderPage,
+  },
+  {
+    path: "/report",
+    name: "report",
+    component: ReportPage,
+  },
   {
     path: "/account",
     redirect: { name: "profile" },

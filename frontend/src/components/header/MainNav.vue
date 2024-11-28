@@ -3,8 +3,12 @@ import LinkButton from "../UI/LinkButton.vue";
 import Link from "../UI/Link.vue";
 import { useAuthStore } from "../../store";
 import Dropdown from "../UI/Dropdown.vue";
+import { watchEffect } from "vue";
 
 const store = useAuthStore();
+watchEffect(() => {
+  console.log(store.isLoggedIn, store.user?.name);
+});
 </script>
 
 <template>
@@ -15,13 +19,18 @@ const store = useAuthStore();
     <!-- Dropdown quản lý -->
     <Dropdown />
     <li @click="$emit('closeMenu')">
-      <Link route-name="home">Thống kê</Link>
+      <Link route-name="report">Thống kê</Link>
     </li>
     <li @click="$emit('closeMenu')">
-      <Link route-name="home">Đơn hàng</Link>
+      <Link route-name="order">Đơn hàng</Link>
     </li>
     <li v-if="!store.isLoggedIn" @click="$emit('closeMenu')">
       <LinkButton route-name="login">Đăng nhập</LinkButton>
+    </li>
+    <li v-else-if="store.isLoggedIn" class="font-semibold underline">
+      <router-link :to="{ name: 'profile' }">{{
+        store.user?.name
+      }}</router-link>
     </li>
   </ul>
 </template>

@@ -40,6 +40,7 @@ exports.signup = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
+
   try {
     const userService = new UserService(MongoDB.client);
     const userDoc = await userService.findByEmail(email);
@@ -48,7 +49,7 @@ exports.login = async (req, res, next) => {
 
     // Found user
     if (userDoc) {
-      const passwordOK = bcrypt.compareSync(password, userDoc.password);
+      const passwordOK = bcrypt.compareSync(password, userDoc.passwordHash);
 
       if (passwordOK) {
         jwt.sign(
@@ -60,6 +61,7 @@ exports.login = async (req, res, next) => {
 
             res.cookie("token", token, {
               sameSite: "none",
+              secure: true,
             });
             res.json(userDoc);
           }
@@ -87,6 +89,7 @@ exports.getProfile = async (req, res, next) => {
     if (token) {
       const userService = new UserService(MongoDB.client);
       const verifiedUser = await getUserDataFromReq(req);
+
       const userDoc = await userService.findById(verifiedUser.id, {
         passwordHash: 0,
       });
