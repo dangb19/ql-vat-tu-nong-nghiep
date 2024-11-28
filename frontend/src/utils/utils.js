@@ -39,3 +39,24 @@ export function formatDate(inputDate) {
   // Trả về chuỗi định dạng yêu cầu
   return `${hours}:${minutes} ngày ${day}/${month}/${year}`;
 }
+
+export function convertToISOString(dateInput) {
+  // Tạo đối tượng Date từ giá trị đầu vào
+  const date = new Date(dateInput);
+
+  // Chuyển đổi sang chuỗi ISO 8601
+  return date.toISOString();
+}
+
+export function convertToBrowserDate(isoDate) {
+  // Tạo đối tượng Date từ chuỗi ISO 8601
+  const date = new Date(isoDate);
+
+  // Lấy năm, tháng, và ngày
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // getMonth() trả về từ 0-11
+  const day = String(date.getDate()).padStart(2, "0");
+
+  // Ghép chuỗi theo định dạng "YYYY-MM-DD"
+  return `${year}-${month}-${day}`;
+}

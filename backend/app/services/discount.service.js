@@ -1,3 +1,4 @@
+const { Double } = require("mongodb");
 const AppService = require("./app.service");
 
 class Discount extends AppService {
@@ -23,9 +24,9 @@ class Discount extends AppService {
     const discount = {
       name: payload.name,
       description: payload.description,
-      discountPercentage: payload.discountPercentage,
-      startDate: payload.startDate,
-      endDate: payload.endDate,
+      discountPercentage: new Double(payload.discountPercentage),
+      startDate: new Date(payload.startDate),
+      endDate: new Date(payload.endDate),
     };
 
     Object.keys(discount).forEach((key) => {

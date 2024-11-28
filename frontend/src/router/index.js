@@ -21,6 +21,12 @@ import CategoryUpdatePage from "../views/CategoryUpdatePage.vue";
 import CategoryCreatePage from "../views/CategoryCreatePage.vue";
 import ProductCreatePage from "../views/ProductCreatePage.vue";
 import ProductUpdatePage from "../views/ProductUpdatePage.vue";
+import DiscountCreatePage from "../views/DiscountCreatePage.vue";
+import DiscountUpdatePage from "../views/DiscountUpdatePage.vue";
+import ManufacturerCreatePage from "../views/ManufacturerCreatePage.vue";
+import ManufacturerUpdatePage from "../views/ManufacturerUpdatePage.vue";
+import SupplierCreatePage from "../views/SupplierCreatePage.vue";
+import SupplierUpdatePage from "../views/SupplierUpdatePage.vue";
 
 const routes = [
   {
@@ -121,18 +127,63 @@ const routes = [
   },
   {
     path: "/discount",
-    name: "discount",
-    component: DiscountPage,
+    children: [
+      {
+        path: "",
+        name: "discount",
+        component: DiscountPage,
+      },
+      {
+        path: "create",
+        name: "discount-create",
+        component: DiscountCreatePage,
+      },
+      {
+        path: ":id",
+        name: "discount-update",
+        component: DiscountUpdatePage,
+      },
+    ],
   },
   {
     path: "/manufacturer",
-    name: "manufacturer",
-    component: ManufacturerPage,
+    children: [
+      {
+        path: "",
+        name: "manufacturer",
+        component: ManufacturerPage,
+      },
+      {
+        path: "create",
+        name: "manufacturer-create",
+        component: ManufacturerCreatePage,
+      },
+      {
+        path: ":id",
+        name: "manufacturer-update",
+        component: ManufacturerUpdatePage,
+      },
+    ],
   },
   {
     path: "/supplier",
-    name: "supplier",
-    component: SupplierPage,
+    children: [
+      {
+        path: "",
+        name: "supplier",
+        component: SupplierPage,
+      },
+      {
+        path: "create",
+        name: "supplier-create",
+        component: SupplierCreatePage,
+      },
+      {
+        path: ":id",
+        name: "supplier-update",
+        component: SupplierUpdatePage,
+      },
+    ],
   },
 
   {

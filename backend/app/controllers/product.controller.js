@@ -256,7 +256,6 @@ exports.countProductStats = async (req, res, next) => {
       pipeline
     ).toArray();
 
-    console.log(result);
     return res.send(result[0]);
   } catch (error) {
     console.error("Error counting product stats:", error);

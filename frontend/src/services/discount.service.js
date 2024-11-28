@@ -1,7 +1,7 @@
 import createApiClient from "./api.service";
 
-class ManufacturerService {
-  constructor(baseUrl = "http://localhost:3000/api/manufacturer") {
+class DiscountService {
+  constructor(baseUrl = "http://localhost:3000/api/discount") {
     this.api = createApiClient(baseUrl);
   }
 
@@ -25,4 +25,4 @@ class ManufacturerService {
     return (await this.api.delete(`/${id}`)).data;
   }
 }
-export default new ManufacturerService();
+export default new DiscountService();

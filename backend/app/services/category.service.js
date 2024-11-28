@@ -1,22 +1,22 @@
 const AppService = require("./app.service");
 
-class Supplier extends AppService {
+class Category extends AppService {
   constructor(client) {
     super(client, "category");
   }
 
   extractData(payload) {
-    const supplier = {
+    const category = {
       name: payload.name,
       description: payload.description,
     };
 
-    Object.keys(supplier).forEach((key) => {
-      return supplier[key] === undefined && delete supplier[key];
+    Object.keys(category).forEach((key) => {
+      return category[key] === undefined && delete category[key];
     });
 
-    return supplier;
+    return category;
   }
 }
 
-module.exports = Supplier;
+module.exports = Category;
