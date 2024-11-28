@@ -6,15 +6,16 @@ import ProductItems from "../components/ProductItems.vue";
 const products = ref([]);
 
 watchEffect(async () => {
-  const response = await productService.getLimitAndSort(
+  const response = await productService.getProducts(
     "stockQuantity",
     "asc",
-    15
+    1,
+    15,
+    ""
   );
 
   if (response) {
-    products.value = response;
-    console.log(response);
+    products.value = response.products;
   }
 });
 </script>

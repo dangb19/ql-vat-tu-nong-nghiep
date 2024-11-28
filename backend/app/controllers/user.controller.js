@@ -121,6 +121,55 @@ exports.findAll = async (req, res, next) => {
   return res.send(documents);
 };
 
+exports.getUsers = async (req, res, next) => {
+  const {
+    sortField = "name",
+    sortOrder = "asc",
+    page = 1,
+    limit = 10,
+    q = "",
+  } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
+
+  // Tạo điều kiện tìm kiếm
+  const searchCriteria = q
+    ? {
+        $or: [
+          { name: { $regex: q, $options: "i" } },
+          { email: { $regex: q, $options: "i" } },
+        ],
+      }
+    : {};
+
+  // Tạo điều kiện sắp xếp
+  const sortOptions = { [sortField]: sortOrder === "asc" ? 1 : -1 };
+
+  try {
+    const userService = new UserService(MongoDB.client);
+
+    const documents = await userService.Collection.find(searchCriteria)
+      .skip(skip)
+      .limit(limitNum)
+      .sort(sortOptions)
+      .toArray();
+
+    // Đếm tổng số bản ghi thỏa mãn điều kiện
+    const total = await userService.Collection.countDocuments(searchCriteria);
+
+    // Trả về dữ liệu và thông tin phân trang
+    return res.send({
+      users: documents,
+      total,
+    });
+  } catch (error) {
+    console.error("Error retrieving users:", error);
+    return next(new ApiError(500, "An error occurred while retrieving users"));
+  }
+};
+
 exports.findOne = async (req, res, next) => {
   try {
     const userService = new UserService(MongoDB.client);
@@ -132,6 +181,28 @@ exports.findOne = async (req, res, next) => {
   } catch (error) {
     return next(
       new ApiError(500, `Error retrieving user with id=${req.params.id}`)
+    );
+  }
+};
+
+exports.toggleStatus = async (req, res, next) => {
+  if (Object.keys(req.body).length === 0) {
+    return next(new ApiError(400, "Data to update can not be empty"));
+  }
+
+  try {
+    const userService = new UserService(MongoDB.client);
+    const document = await userService.toggleStatus(req.body.id, {
+      status: req.body.status === "active" ? "inactive" : "active",
+    });
+
+    if (!document) {
+      return next(new ApiError(404, "User not found!"));
+    }
+    return res.send({ message: "User was updated successfully" });
+  } catch (error) {
+    return next(
+      new ApiError(500, `Error updating user with id=${req.params.id}`)
     );
   }
 };

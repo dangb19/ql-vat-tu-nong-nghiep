@@ -2,24 +2,24 @@
 import { ref } from "vue";
 import ModalWrapper from "../ModalWrapper.vue";
 import Button from "../UI/Button.vue";
-import customerService from "../../services/customer.service";
+import userService from "../../services/user.service";
 import PlusIcon from "../icons/PlusIcon.vue";
 
 const props = defineProps({
-  customers: Array,
+  users: Array,
 });
 
 const emit = defineEmits(["updateSortFieldAndOrder", "reFetchData"]);
 
-const deleteId = ref();
+const _user = ref();
 const sortOrder = ref("asc");
 
-const editCustomer = (customer) => {
-  alert(`Sửa khách hàng: ${customer.name}`);
-};
-const deleteCustomer = async () => {
-  if (deleteId.value) {
-    const response = await customerService.delete(deleteId.value);
+const toggleStatus = async () => {
+  if (_user.value) {
+    const response = await userService.toggleStatus(
+      _user.value._id,
+      _user.value.status
+    );
     if (response) {
       emit("reFetchData");
       // Thông báo
@@ -28,32 +28,22 @@ const deleteCustomer = async () => {
     }
   }
 };
-const viewOrders = (customer) => {
-  alert(`Xem lịch sử đơn hàng của: ${customer.name}`);
-};
 
 const changeSortFieldAndOrder = (sortField) => {
   const order = sortOrder.value === "asc" ? "desc" : "asc";
   sortOrder.value = order;
   emit("updateSortFieldAndOrder", sortField, order);
 };
-
-// Modal
-
-const show = ref(false);
-const showModal = () => (show.value = true);
-const closeModal = () => (show.value = false);
 </script>
 <template>
   <div class="p-4">
-    <!-- Tiêu đề và nút thêm khách hàng -->
     <div class="flex justify-between mb-4">
-      <h2 class="text-xl font-bold">Danh sách khách hàng</h2>
+      <h2 class="text-xl font-bold">Danh sách</h2>
       <router-link
-        :to="{ name: 'customer-create' }"
+        :to="{ name: 'signup' }"
         class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center gap-2"
       >
-        <span>Thêm khách hàng</span>
+        <span>Tạo tài khoản</span>
         <span class="w-4 inline-block"><PlusIcon /></span>
       </router-link>
     </div>
@@ -75,17 +65,33 @@ const closeModal = () => (show.value = false);
             </th>
             <th
               class="border border-gray-300 px-4 py-2 text-left cursor-pointer"
-              @click="changeSortFieldAndOrder('phoneNumber')"
+              @click="changeSortFieldAndOrder('email')"
             >
-              Số điện thoại
+              Email
               <span class="text-gray-600">
                 <span v-if="sortOrder === 'asc'">&#129129;</span
                 ><span v-else>&#129131;</span>
               </span>
             </th>
-            <th class="border border-gray-300 px-4 py-2 text-left">Địa chỉ</th>
-            <th class="border border-gray-300 px-4 py-2 text-left">
-              Số đơn hàng
+            <th
+              class="border border-gray-300 px-4 py-2 text-left cursor-pointer"
+              @click="changeSortFieldAndOrder('role')"
+            >
+              Vai trò
+              <span class="text-gray-600">
+                <span v-if="sortOrder === 'asc'">&#129129;</span
+                ><span v-else>&#129131;</span>
+              </span>
+            </th>
+            <th
+              class="border border-gray-300 px-4 py-2 text-left cursor-pointer"
+              @click="changeSortFieldAndOrder('status')"
+            >
+              Trạng thái
+              <span class="text-gray-600">
+                <span v-if="sortOrder === 'asc'">&#129129;</span
+                ><span v-else>&#129131;</span>
+              </span>
             </th>
             <th class="border border-gray-300 px-4 py-2 text-left">
               Hành động
@@ -93,22 +99,28 @@ const closeModal = () => (show.value = false);
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(customer, index) in customers" :key="index">
+          <tr
+            v-for="(user, index) in users"
+            :key="index"
+            :class="{
+              'text-gray-400': user.status !== 'active',
+            }"
+          >
             <td class="border border-gray-300 px-4 py-2 break-words">
-              {{ customer.name }}
+              {{ user.name }}
             </td>
             <td class="border border-gray-300 px-4 py-2 break-words">
-              {{ customer.phoneNumber }}
+              {{ user.email }}
             </td>
             <td class="border border-gray-300 px-4 py-2 break-words">
-              {{ customer.address }}
+              {{ user.role }}
             </td>
             <td class="border border-gray-300 px-4 py-2 text-center">
-              {{ customer.orders.length }}
+              {{ user.status }}
             </td>
             <td class="border border-gray-300 px-4 py-2 space-x-2">
               <router-link
-                :to="{ name: 'customer-update', params: { id: customer._id } }"
+                :to="{ name: 'user-update', params: { id: user._id } }"
                 class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 Sửa
@@ -116,47 +128,21 @@ const closeModal = () => (show.value = false);
               <button
                 @click="
                   () => {
-                    deleteId = customer._id;
-                    showModal();
+                    _user = user;
+                    toggleStatus();
                   }
                 "
-                class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                class="px-2 py-1 bg-red-500 text-white rounded"
+                :class="{
+                  'bg-blue-500': user.role !== 'admin',
+                }"
               >
-                Xóa
-              </button>
-              <button
-                @click="viewOrders(customer)"
-                class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-              >
-                Lịch sử
+                {{ user.status === "active" ? "Tắt" : "Bật" }}
               </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-
-    <!-- Confirm Modal -->
-    <ModalWrapper :show-modal="show">
-      <template #title> Xác nhận xóa khách hàng? </template>
-
-      <template #actions>
-        <Button
-          :on-click="closeModal"
-          classes="py-2 !bg-transparent !text-main border border-main"
-          >Hủy</Button
-        >
-        <Button
-          :on-click="
-            () => {
-              deleteCustomer();
-              closeModal();
-            }
-          "
-          classes="py-2"
-          >Đồng ý</Button
-        >
-      </template>
-    </ModalWrapper>
   </div>
 </template>

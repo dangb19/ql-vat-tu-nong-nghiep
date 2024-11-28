@@ -16,6 +16,11 @@ import SupplierPage from "../views/SupplierPage.vue";
 import ProductPage from "../views/ProductPage.vue";
 import CustomerUpdatePage from "../views/CustomerUpdatePage.vue";
 import CustomerCreatePage from "../views/CustomerCreatePage.vue";
+import UserUpdatePage from "../views/UserUpdatePage.vue";
+import CategoryUpdatePage from "../views/CategoryUpdatePage.vue";
+import CategoryCreatePage from "../views/CategoryCreatePage.vue";
+import ProductCreatePage from "../views/ProductCreatePage.vue";
+import ProductUpdatePage from "../views/ProductUpdatePage.vue";
 
 const routes = [
   {
@@ -38,6 +43,16 @@ const routes = [
         component: ProductPage,
       },
       {
+        path: "create",
+        name: "product-create",
+        component: ProductCreatePage,
+      },
+      {
+        path: "update/:id",
+        name: "product-update",
+        component: ProductUpdatePage,
+      },
+      {
         path: ":id",
         name: "product-details",
         component: ProductDetailsPage,
@@ -46,8 +61,18 @@ const routes = [
   },
   {
     path: "/user",
-    name: "user",
-    component: UserPage,
+    children: [
+      {
+        path: "",
+        name: "user",
+        component: UserPage,
+      },
+      {
+        path: ":id",
+        name: "user-update",
+        component: UserUpdatePage,
+      },
+    ],
   },
   {
     path: "/customer",
@@ -58,21 +83,36 @@ const routes = [
         component: CustomerPage,
       },
       {
-        path: "update/:id",
-        name: "customer-update",
-        component: CustomerUpdatePage,
-      },
-      {
         path: "create",
         name: "customer-create",
         component: CustomerCreatePage,
+      },
+      {
+        path: ":id",
+        name: "customer-update",
+        component: CustomerUpdatePage,
       },
     ],
   },
   {
     path: "/category",
-    name: "category",
-    component: CategoryPage,
+    children: [
+      {
+        path: "",
+        name: "category",
+        component: CategoryPage,
+      },
+      {
+        path: "create",
+        name: "category-create",
+        component: CategoryCreatePage,
+      },
+      {
+        path: ":id",
+        name: "category-update",
+        component: CategoryUpdatePage,
+      },
+    ],
   },
   {
     path: "/inventory",

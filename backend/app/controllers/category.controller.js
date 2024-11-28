@@ -18,6 +18,7 @@ exports.create = async (req, res, next) => {
 
 exports.findAll = async (req, res, next) => {
   let documents = [];
+  const projection = { description: 0 };
 
   try {
     const categoryService = new CategoryService(MongoDB.client);
@@ -25,7 +26,7 @@ exports.findAll = async (req, res, next) => {
     if (name) {
       documents = await categoryService.findByName(name);
     } else {
-      documents = await categoryService.find({});
+      documents = await categoryService.find({}, projection);
     }
   } catch (error) {
     return next(new ApiError(500, "An error occur while retrieving doc"));

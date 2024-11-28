@@ -1,6 +1,6 @@
 const AppService = require("./app.service");
 
-class Customer extends AppService {
+class CustomerService extends AppService {
   constructor(client) {
     super(client, "customer");
   }
@@ -21,4 +21,4 @@ class Customer extends AppService {
   }
 }
 
-module.exports = Customer;
+module.exports = CustomerService;

@@ -16,8 +16,24 @@ class UserService {
   async getProfile() {
     return (await this.api.get("/profile")).data;
   }
+  async toggleStatus(id, status) {
+    return (await this.api.put(`/status`, { id, status })).data;
+  }
   async updateProfile(id, data) {
     return (await this.api.put(`/${id}`, data)).data;
+  }
+  async delete(id) {
+    return (await this.api.delete(`/${id}`)).data;
+  }
+
+  async getUsers(sortField, sortOrder, page, limit, searchTerm) {
+    let url = `?sortField=${sortField}&sortOrder=${sortOrder}&page=${page}&limit=${limit}&q=${searchTerm}`;
+
+    return (await this.api.get(url)).data;
+  }
+
+  async getUser(id) {
+    return (await this.api.get(`/${id}`)).data;
   }
 
   // async getAll() {
@@ -30,9 +46,6 @@ class UserService {
 
   // async update(id, data) {
   //   return (await this.api.put(`/${id}`, data)).data;
-  // }
-  // async delete(id) {
-  //   return (await this.api.delete(`/${id}`)).data;
   // }
 }
 export default new UserService();

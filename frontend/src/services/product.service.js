@@ -9,13 +9,6 @@ class ProductService {
     return (await this.api.get(`?sort=${sort}`)).data;
   }
 
-  async getLimitAndSort(sortField, order, limit) {
-    return (
-      await this.api.get(
-        `?sortField=${sortField}&sortOrder=${order}&limit=${limit}`
-      )
-    ).data;
-  }
   async findByName(searchTerm) {
     return (await this.api.get(`/search?q=${searchTerm}`)).data;
   }
@@ -28,12 +21,30 @@ class ProductService {
     ).data;
   }
 
+  async getProducts(sortField, sortOrder, page, limit, searchTerm) {
+    let url = `?sortField=${sortField}&sortOrder=${sortOrder}&page=${page}&limit=${limit}&q=${searchTerm}`;
+
+    return (await this.api.get(url)).data;
+  }
+
+  async getProductInfo() {
+    return (await this.api.get(`/product-info`)).data;
+  }
+
   async get(id) {
     return (await this.api.get(`/${id}`)).data;
   }
 
+  async create(payload) {
+    return (await this.api.post(`/`, payload)).data;
+  }
+
   async update(id, payload) {
     return (await this.api.put(`/${id}`, payload)).data;
+  }
+
+  async delete(id) {
+    return (await this.api.delete(`/${id}`)).data;
   }
 }
 export default new ProductService();

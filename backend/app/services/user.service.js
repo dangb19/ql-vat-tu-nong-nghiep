@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const AppService = require("./app.service");
 
 class UserService extends AppService {
@@ -21,8 +22,19 @@ class UserService extends AppService {
     return user;
   }
 
-  async findByEmail(email) {
-    return await this.Collection.findOne({ email });
+  async toggleStatus(id, payload) {
+    const filter = {
+      _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
+      // role: { $ne: "admin" },    // Chỉ được vô hiệu nếu user không phải admin
+    };
+    const update = this.extractData(payload);
+    const result = await this.Collection.findOneAndUpdate(
+      filter,
+      { $set: update },
+      { returnDocument: "after" }
+    );
+
+    return result;
   }
 }
 

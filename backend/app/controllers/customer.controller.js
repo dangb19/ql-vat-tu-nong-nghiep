@@ -34,50 +34,6 @@ exports.findAll = async (req, res, next) => {
   return res.send(documents);
 };
 
-// exports.getCustomers = async (req, res, next) => {
-//   let documents = [];
-
-//   const {
-//     sortField = "name",
-//     sortOrder = "asc",
-//     page = 1,
-//     limit = 10,
-//     q = "",
-//   } = req.query;
-
-//   const pageNum = parseInt(page);
-//   const limitNum = parseInt(limit);
-//   const skip = (pageNum - 1) * limitNum;
-
-//   const searchCriteria = q
-//     ? {
-//         $or: [
-//           { name: { $regex: q, $options: "i" } },
-//           { phoneNumber: { $regex: q, $options: "i" } },
-//         ],
-//       }
-//     : {};
-
-//   const sortOptions = {};
-//   sortOptions[sortField] = sortOrder === "asc" ? 1 : -1;
-
-//   try {
-//     const customerService = new CustomerService(MongoDB.client);
-
-//     documents = await customerService
-//       .find(searchCriteria)
-//       .skip(skip)
-//       .limit(limit)
-//       .sort(sortOptions)
-//       .toArray();
-//     console.log(documents);
-//   } catch (error) {
-//     return next(new ApiError(500, "An error occur while retrieving user"));
-//   }
-
-//   return res.send(documents);
-// };
-
 exports.getCustomers = async (req, res, next) => {
   const {
     sortField = "name",

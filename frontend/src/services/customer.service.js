@@ -14,6 +14,7 @@ class CustomerService {
   async get(id) {
     return (await this.api.get(`/${id}`)).data;
   }
+
   async create(payload) {
     return (await this.api.post(`/`, payload)).data;
   }

@@ -1,12 +1,8 @@
 import createApiClient from "./api.service";
 
-class CategoryService {
-  constructor(baseUrl = "http://localhost:3000/api/category") {
+class ManufacturerService {
+  constructor(baseUrl = "http://localhost:3000/api/manufacturer") {
     this.api = createApiClient(baseUrl);
-  }
-
-  async getAll() {
-    return (await this.api.get("/")).data;
   }
 
   async get(id) {
@@ -25,4 +21,4 @@ class CategoryService {
     return (await this.api.delete(`/${id}`)).data;
   }
 }
-export default new CategoryService();
+export default new ManufacturerService();

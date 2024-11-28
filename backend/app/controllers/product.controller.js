@@ -1,13 +1,32 @@
-const { ObjectId } = require("mongodb");
+const { ObjectId, Double } = require("mongodb");
 const ApiError = require("../api-error");
 const ProductService = require("../services/product.service");
+const ManufacturerService = require("../services/manufacturer.service");
+const SupplierService = require("../services/supplier.service");
+const CategoryService = require("../services/category.service");
+const DiscountService = require("../services/discount.service");
 
 const MongoDB = require("../utils/mongodb.util");
+
+const convertToObjectId = (str) =>
+  ObjectId.isValid(str) ? new ObjectId(str) : null;
 
 exports.create = async (req, res, next) => {
   try {
     const productService = new ProductService(MongoDB.client);
-    const document = await productService.create(req.body);
+
+    const document = await productService.create({
+      name: req.body.name,
+      category: convertToObjectId(req.body.category),
+      manufacturer: convertToObjectId(req.body.manufacturer),
+      supplier: convertToObjectId(req.body.supplier),
+      discount: convertToObjectId(req.body.discount),
+      price: new Double(req.body.price),
+      costPrice: new Double(req.body.costPrice),
+      stockQuantity: parseInt(req.body.stockQuantity, 10),
+      imageUrls: req.body.imageUrls,
+      description: req.body.description,
+    });
 
     return res.send(document);
   } catch (error) {
@@ -54,6 +73,7 @@ exports.findOne = async (req, res, next) => {
 };
 
 exports.getProductWithDetails = async (req, res, next) => {
+  // Không sort, phân trang
   try {
     const productService = new ProductService(MongoDB.client);
     const document = await productService.getProductWithDetails(
@@ -66,6 +86,104 @@ exports.getProductWithDetails = async (req, res, next) => {
       new ApiError(500, `Error retrieving doc with id=${req.params.id}`)
     );
   }
+};
+
+exports.getProducts = async (req, res, next) => {
+  const {
+    sortField = "name",
+    sortOrder = "asc",
+    page = 1,
+    limit = 10,
+    q = "",
+  } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
+
+  // Tạo điều kiện tìm kiếm
+  const searchCriteria = q
+    ? {
+        $or: [{ name: { $regex: q, $options: "i" } }],
+      }
+    : {};
+
+  // Tạo điều kiện sắp xếp
+  const sortOptions = { [sortField]: sortOrder === "asc" ? 1 : -1 };
+
+  try {
+    const productService = new ProductService(MongoDB.client);
+
+    // Aggregation pipeline
+    const pipeline = [
+      // Match search criteria
+      { $match: searchCriteria },
+      // Lookup discount details
+      {
+        $lookup: {
+          from: "discount", // Tên collection chứa thông tin giảm giá
+          localField: "discount",
+          foreignField: "_id",
+          as: "discountInfo",
+        },
+      },
+      // Sort theo sortOptions
+      { $sort: sortOptions },
+      // Skip để phân trang
+      { $skip: skip },
+      // Limit để phân trang
+      { $limit: limitNum },
+    ];
+
+    // Lấy dữ liệu sản phẩm
+    const documents = await productService.Collection.aggregate(
+      pipeline
+    ).toArray();
+
+    // Đếm tổng số bản ghi thỏa mãn điều kiện
+    const total = await productService.Collection.countDocuments(
+      searchCriteria
+    );
+
+    // Trả về dữ liệu và thông tin phân trang
+    return res.send({
+      products: documents,
+      total,
+    });
+  } catch (error) {
+    console.error("Error retrieving products:", error);
+    return next(
+      new ApiError(500, "An error occurred while retrieving products")
+    );
+  }
+};
+
+exports.getProductInfo = async (req, res, next) => {
+  let docsCate = [];
+  let docsDisc = [];
+  let docsManu = [];
+  let docsSupp = [];
+
+  try {
+    const manufacturerService = new ManufacturerService(MongoDB.client);
+    const supplierService = new SupplierService(MongoDB.client);
+    const categoryService = new CategoryService(MongoDB.client);
+    const discountService = new DiscountService(MongoDB.client);
+
+    docsCate = await categoryService.find({});
+    docsDisc = await discountService.find({});
+    docsManu = await manufacturerService.find({});
+    docsSupp = await supplierService.find({});
+  } catch (error) {
+    return next(new ApiError(500, "An error occur while retrieving docs"));
+  }
+
+  return res.send({
+    manufacturers: docsManu,
+    suppliers: docsSupp,
+    categories: docsCate,
+    discounts: docsDisc,
+  });
 };
 
 exports.update = async (req, res, next) => {
