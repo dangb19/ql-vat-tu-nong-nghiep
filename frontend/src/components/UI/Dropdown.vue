@@ -8,8 +8,8 @@ const links = ref([
   { label: "Khách hàng", routeName: "customer" },
   { label: "Danh mục", routeName: "category" },
   { label: "Sản phẩm", routeName: "product" },
-  { label: "Tồn kho", routeName: "inventory" },
-  { label: "Giảm giá", routeName: "discount" },
+  { label: "Kho", routeName: "inventory" },
+  { label: "Mã giảm giá", routeName: "discount" },
   { label: "Nhà sản xuất", routeName: "manufacturer" },
   { label: "Nhà cung cấp", routeName: "supplier" },
 ]);

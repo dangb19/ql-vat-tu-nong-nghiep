@@ -1,5 +1,7 @@
 const ApiError = require("../api-error");
 const OrderService = require("../services/order.service");
+const CustomerService = require("../services/customer.service");
+const UserService = require("../services/user.service");
 
 const MongoDB = require("../utils/mongodb.util");
 
@@ -32,6 +34,179 @@ exports.findAll = async (req, res, next) => {
   }
 
   return res.send(documents);
+};
+
+exports.getOrders = async (req, res, next) => {
+  const {
+    sortField = "date",
+    sortOrder = "desc",
+    page = 1,
+    limit = 10,
+    q = "",
+  } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
+
+  // Tạo điều kiện tìm kiếm
+  const searchCriteria = {};
+
+  // Tạo điều kiện sắp xếp
+  const sortOptions = { [sortField]: sortOrder === "asc" ? 1 : -1 };
+
+  try {
+    const orderService = new OrderService(MongoDB.client);
+
+    // Sử dụng aggregation để ánh xạ thông tin khách hàng và người tạo
+    const pipeline = [
+      // Áp dụng tiêu chí tìm kiếm
+      { $match: searchCriteria },
+
+      // Lookup thông tin khách hàng
+      {
+        $lookup: {
+          from: "customer", // Tên collection khách hàng
+          localField: "customer", // Trường trong orders
+          foreignField: "_id", // Trường trong customers
+          as: "customerInfo", // Kết quả lưu vào customerInfo
+        },
+      },
+
+      // Lookup thông tin người tạo đơn hàng
+      {
+        $lookup: {
+          from: "user", // Tên collection người dùng
+          localField: "createdBy", // Trường trong orders
+          foreignField: "_id", // Trường trong users
+          as: "createdByInfo", // Kết quả lưu vào createdByInfo
+        },
+      },
+
+      // Sắp xếp
+      { $sort: sortOptions },
+
+      // Phân trang
+      { $skip: skip },
+      { $limit: limitNum },
+
+      // Chỉ chọn các trường cần thiết
+      {
+        $project: {
+          _id: 1,
+
+          "customerInfo.name": 1,
+          date: 1,
+          totalAmount: 1,
+          status: 1,
+          "createdByInfo.name": 1,
+        },
+      },
+    ];
+
+    // Thực hiện pipeline
+    const documents = await orderService.Collection.aggregate(
+      pipeline
+    ).toArray();
+
+    // Đếm tổng số bản ghi thỏa mãn điều kiện
+    const total = await orderService.Collection.countDocuments(searchCriteria);
+
+    // Trả về dữ liệu và thông tin phân trang
+    return res.send({
+      orders: documents,
+      total,
+    });
+  } catch (error) {
+    console.error("Error retrieving orders:", error);
+    return next(new ApiError(500, "An error occurred while retrieving orders"));
+  }
+};
+
+exports.getOrders2 = async (req, res, next) => {
+  const {
+    sortField = "date",
+    sortOrder = "desc",
+    page = 1,
+    limit = 10,
+    q = "",
+  } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
+
+  // Tạo điều kiện tìm kiếm
+  const searchCriteria = {
+    $or: [{ status: { $regex: "pending", $options: "i" } }],
+  };
+
+  // Tạo điều kiện sắp xếp
+  const sortOptions = { [sortField]: sortOrder === "asc" ? 1 : -1 };
+
+  try {
+    const orderService = new OrderService(MongoDB.client);
+
+    // Aggregation pipeline
+    const pipeline = [
+      // Match search criteria
+      { $match: searchCriteria },
+      // Lookup discount details
+      {
+        $lookup: {
+          from: "customer", // Tên collection chứa thông tin giảm giá
+          localField: "customer",
+          foreignField: "_id",
+          as: "customerInfo",
+        },
+      },
+      // Sort theo sortOptions
+      { $sort: sortOptions },
+      // Skip để phân trang
+      { $skip: skip },
+      // Limit để phân trang
+      { $limit: limitNum },
+    ];
+
+    // Lấy dữ liệu sản phẩm
+    const documents = await orderService.Collection.aggregate(
+      pipeline
+    ).toArray();
+
+    // Đếm tổng số bản ghi thỏa mãn điều kiện
+    const total = await orderService.Collection.countDocuments(searchCriteria);
+
+    // Trả về dữ liệu và thông tin phân trang
+    return res.send({
+      orders: documents,
+      total,
+    });
+  } catch (error) {
+    console.error("Error retrieving products:", error);
+    return next(
+      new ApiError(500, "An error occurred while retrieving products")
+    );
+  }
+};
+
+exports.getOrderInfo = async (req, res, next) => {
+  let customers = [];
+  let users = [];
+
+  try {
+    const customerService = new CustomerService(MongoDB.client);
+    const userService = new UserService(MongoDB.client);
+
+    customers = await customerService.find({});
+    users = await userService.find({});
+  } catch (error) {
+    return next(new ApiError(500, "An error occur while retrieving docs"));
+  }
+
+  return res.send({
+    customers,
+    users,
+  });
 };
 
 exports.findOne = async (req, res, next) => {

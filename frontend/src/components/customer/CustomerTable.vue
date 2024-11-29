@@ -124,12 +124,12 @@ const closeModal = () => (show.value = false);
               >
                 Xóa
               </button>
-              <button
+              <!-- <button
                 @click="viewOrders(customer)"
                 class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
               >
                 Lịch sử
-              </button>
+              </button> -->
             </td>
           </tr>
         </tbody>

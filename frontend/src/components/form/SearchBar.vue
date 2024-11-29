@@ -3,13 +3,14 @@ import { ref } from "vue";
 
 const props = defineProps({
   placeholder: String,
+  classes: String,
 });
 const emit = defineEmits(["changeSearchTerm"]);
 const searchTerm = ref("");
 </script>
 
 <template>
-  <div class="p-4 flex justify-center">
+  <div class="p-4 flex justify-center" :class="classes">
     <div class="mb-4 grow flex gap-2 max-w-4xl">
       <input
         v-model="searchTerm"

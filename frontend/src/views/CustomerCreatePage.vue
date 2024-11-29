@@ -19,15 +19,6 @@ const customerId = ref(null);
 // const store = useAuthStore();
 const router = useRouter();
 
-// onMounted(() => {
-//   const timer = setTimeout(() => {
-//     if (!store.isLoggedIn) {
-//       router.push({ name: "login" });
-//     }
-//     clearTimeout(timer);
-//   }, 300);
-// });
-
 const customerInfoEmpty = (customerObj) =>
   Object.values(customer).every((info) => !info);
 

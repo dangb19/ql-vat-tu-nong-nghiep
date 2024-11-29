@@ -29,6 +29,8 @@ import SupplierUpdatePage from "../views/SupplierUpdatePage.vue";
 import ProfileUpdatePage from "../views/ProfileUpdatePage.vue";
 import ReportPage from "../views/ReportPage.vue";
 import OrderPage from "../views/OrderPage.vue";
+import OrderCreatePage from "../views/OrderCreatePage.vue";
+import OrderDetailsPage from "../views/OrderDetailsPage.vue";
 
 const routes = [
   {
@@ -219,8 +221,24 @@ const routes = [
 
   {
     path: "/order",
-    name: "order",
-    component: OrderPage,
+    children: [
+      {
+        path: "",
+        name: "order",
+        component: OrderPage,
+      },
+
+      {
+        path: "create",
+        name: "order-create",
+        component: OrderCreatePage,
+      },
+      {
+        path: ":id",
+        name: "order-details",
+        component: OrderDetailsPage,
+      },
+    ],
   },
   {
     path: "/report",

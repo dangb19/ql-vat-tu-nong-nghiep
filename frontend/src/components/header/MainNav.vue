@@ -3,12 +3,8 @@ import LinkButton from "../UI/LinkButton.vue";
 import Link from "../UI/Link.vue";
 import { useAuthStore } from "../../store";
 import Dropdown from "../UI/Dropdown.vue";
-import { watchEffect } from "vue";
 
 const store = useAuthStore();
-watchEffect(() => {
-  console.log(store.isLoggedIn, store.user?.name);
-});
 </script>
 
 <template>
@@ -18,9 +14,9 @@ watchEffect(() => {
     </li>
     <!-- Dropdown quản lý -->
     <Dropdown />
-    <li @click="$emit('closeMenu')">
+    <!-- <li @click="$emit('closeMenu')">
       <Link route-name="report">Thống kê</Link>
-    </li>
+    </li> -->
     <li @click="$emit('closeMenu')">
       <Link route-name="order">Đơn hàng</Link>
     </li>

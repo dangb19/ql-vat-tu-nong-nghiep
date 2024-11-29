@@ -12,6 +12,16 @@ class OrderService {
     return (await this.api.get("/")).data;
   }
 
+  async getOrders2(sortField, sortOrder, page, limit, searchTerm) {
+    let url = `?sortField=${sortField}&sortOrder=${sortOrder}&page=${page}&limit=${limit}&q=${searchTerm}`;
+
+    return (await this.api.get(url)).data;
+  }
+
+  async getOrderInfo() {
+    return (await this.api.get(`/order-info`)).data;
+  }
+
   async get(id) {
     return (await this.api.get(`/${id}`)).data;
   }
