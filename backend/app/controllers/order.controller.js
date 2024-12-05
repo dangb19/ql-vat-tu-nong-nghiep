@@ -1,18 +1,71 @@
 const ApiError = require("../api-error");
 const OrderService = require("../services/order.service");
 const CustomerService = require("../services/customer.service");
+const ProductService = require("../services/product.service");
 const UserService = require("../services/user.service");
 
 const MongoDB = require("../utils/mongodb.util");
+const { ObjectId, Double } = require("mongodb");
 
+const convertToObjectId = (str) =>
+  ObjectId.isValid(str) ? new ObjectId(str) : null;
+
+//  Create order with stock update
 exports.create = async (req, res, next) => {
   try {
+    const session = MongoDB.client.startSession();
     const orderService = new OrderService(MongoDB.client);
-    const document = await orderService.create(req.body);
+    const productService = new ProductService(MongoDB.client);
+    const productsCollection = MongoDB.client
+      .db("ql-vat-tu-nong-nghiep")
+      .collection("product");
 
-    return res.send(document);
+    const order = {
+      customer: convertToObjectId(req.body.customer),
+      date: new Date(),
+      totalAmount: new Double(req.body.totalAmount),
+      status: "pending",
+      createdBy: convertToObjectId(req.body.createdBy),
+      orderDetails: req.body.orderDetails,
+    };
+    const newOrder = {
+      ...order,
+      orderDetails: order.orderDetails.map((ord) => {
+        return {
+          ...ord,
+          productId: convertToObjectId(ord.productId),
+          price: new Double(ord.price),
+          subtotal: new Double(ord.subtotal),
+        };
+      }),
+    };
+
+    await session.withTransaction(async () => {
+      // 1. Tạo đơn hàng
+      await orderService.create(newOrder);
+
+      // 2. Cập nhật stockQuantity của từng sản phẩm
+      for (const item of order.orderDetails) {
+        const { productId, quantity } = item;
+
+        const updateResult = await productsCollection.updateOne(
+          {
+            _id: convertToObjectId(productId),
+            stockQuantity: { $gte: quantity },
+          }, // Kiểm tra đủ hàng
+          { $inc: { stockQuantity: -quantity } }, // Giảm số lượng trong kho
+          { session }
+        );
+
+        if (updateResult.matchedCount === 0) {
+          throw new Error(`Insufficient stock for product ${productId}`);
+        }
+      }
+    });
+
+    return res.send("Created order success!");
   } catch (error) {
-    console.log("error", error);
+    console.error("Transaction aborted: ", error);
 
     return next(new ApiError(500, "An error occur while creating doc"));
   }

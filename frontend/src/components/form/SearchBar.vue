@@ -10,7 +10,7 @@ const searchTerm = ref("");
 </script>
 
 <template>
-  <div class="p-4 flex justify-center" :class="classes">
+  <div class="flex justify-center" :class="classes">
     <div class="mb-4 grow flex gap-2 max-w-4xl">
       <input
         v-model="searchTerm"
@@ -19,6 +19,7 @@ const searchTerm = ref("");
         class="border border-gray-300 rounded px-4 py-2 grow"
       />
       <button
+        type="button"
         @click="emit('changeSearchTerm', searchTerm)"
         class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
       >

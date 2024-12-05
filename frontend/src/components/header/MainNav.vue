@@ -14,9 +14,9 @@ const store = useAuthStore();
     </li>
     <!-- Dropdown quản lý -->
     <Dropdown />
-    <!-- <li @click="$emit('closeMenu')">
+    <li @click="$emit('closeMenu')">
       <Link route-name="report">Thống kê</Link>
-    </li> -->
+    </li>
     <li @click="$emit('closeMenu')">
       <Link route-name="order">Đơn hàng</Link>
     </li>
