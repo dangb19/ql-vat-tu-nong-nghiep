@@ -7,6 +7,7 @@ class Order extends AppService {
 
   extractData(payload) {
     const order = {
+      orderCode: payload.orderCode,
       customer: payload.customer,
       date: payload.date,
       totalAmount: payload.totalAmount,

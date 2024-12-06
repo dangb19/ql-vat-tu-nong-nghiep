@@ -46,6 +46,12 @@ class ProductService {
   async update(id, payload) {
     return (await this.api.put(`/${id}`, payload)).data;
   }
+  async updateDiscount(id, payload) {
+    return (await this.api.put(`/${id}/update-discount`, payload)).data;
+  }
+  async removeDiscount(id) {
+    return (await this.api.put(`/${id}/remove-discount`)).data;
+  }
 
   async delete(id) {
     return (await this.api.delete(`/${id}`)).data;

@@ -14,4 +14,7 @@ router
   .put(product.update)
   .delete(product.delete);
 
+router.route("/:id/update-discount").put(product.updateDiscount);
+router.route("/:id/remove-discount").put(product.removeDiscount);
+
 module.exports = router;

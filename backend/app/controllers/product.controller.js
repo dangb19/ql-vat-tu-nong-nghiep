@@ -210,6 +210,45 @@ exports.update = async (req, res, next) => {
   }
 };
 
+exports.updateDiscount = async (req, res, next) => {
+  if (Object.keys(req.body).length === 0) {
+    return next(new ApiError(400, "Doc to update can not be empty"));
+  }
+
+  try {
+    const productService = new ProductService(MongoDB.client);
+
+    const document = await productService.update(req.params.id, {
+      discount: new ObjectId(req.body.discount),
+    });
+
+    if (!document) {
+      return next(new ApiError(404, "Doc not found!"));
+    }
+    return res.send({ message: "Doc was updated successfully" });
+  } catch (error) {
+    return next(
+      new ApiError(500, `Error updating doc with id=${req.params.id}`)
+    );
+  }
+};
+
+exports.removeDiscount = async (req, res, next) => {
+  try {
+    const productService = new ProductService(MongoDB.client);
+    const document = await productService.removeDiscount(req.params.id);
+
+    if (!document) {
+      return next(new ApiError(404, "Doc not found!"));
+    }
+    return res.send({ message: "Doc was updated successfully" });
+  } catch (error) {
+    return next(
+      new ApiError(500, `Error updating doc with id=${req.params.id}`)
+    );
+  }
+};
+
 exports.delete = async (req, res, next) => {
   try {
     const productService = new ProductService(MongoDB.client);

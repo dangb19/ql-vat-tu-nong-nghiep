@@ -2,19 +2,48 @@
 import { computed, ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import productService from "../services/product.service";
+import discountService from "../services/discount.service";
 
-import { formatCurrency } from "../utils/utils";
+import { formatCurrency, formatDate } from "../utils/utils";
 import Link from "../components/UI/Link.vue";
 import LinkButton from "../components/UI/LinkButton.vue";
+import SelectModal from "../components/order/SelectModal.vue";
 
 const route = useRoute();
-
 const product = ref(null);
+const discounts = ref([]);
+const showDiscountModal = ref(false);
 
-watchEffect(async () => {
+const closeDiscountModal = () => (showDiscountModal.value = false);
+const openDiscountModal = () => (showDiscountModal.value = true);
+const fetchDiscounts = async () => {
+  const res = await discountService.getAll();
+  if (res) {
+    discounts.value = res;
+  }
+};
+const fetchProductDetails = async () => {
   const response = await productService.get(route.params.id);
   product.value = response;
-});
+};
+const updateProductDiscount = async (discountId) => {
+  if (product.value?._id) {
+    await productService.updateDiscount(product.value._id, {
+      discount: discountId,
+    });
+    fetchProductDetails();
+    closeDiscountModal();
+  }
+};
+const removeProductDiscount = async () => {
+  if (product.value?._id) {
+    await productService.removeDiscount(product.value._id);
+    fetchProductDetails();
+    closeDiscountModal();
+  }
+};
+watchEffect(fetchDiscounts);
+watchEffect(fetchProductDetails);
 </script>
 
 <template>
@@ -72,9 +101,49 @@ watchEffect(async () => {
             <p v-else class="text-gray-600">không</p>
           </div>
           <div>
-            <Link route-name="login" class="text-lg text-main"
-              >Chỉnh&nbsp;sửa&nbsp;&#129125;</Link
+            <SelectModal
+              label="Điều chỉnh"
+              :showModal="showDiscountModal"
+              @closeModal="closeDiscountModal"
+              @openModal="openDiscountModal"
             >
+              <template v-slot:title>
+                <div class="flex justify-between">
+                  <h3 class="text-lg">Danh sách mã giảm giá</h3>
+                  <button
+                    type="button"
+                    class="font-semibold underline"
+                    @click="() => removeProductDiscount()"
+                  >
+                    Hủy áp dụng
+                  </button>
+                </div>
+              </template>
+              <template v-slot:content>
+                <ul
+                  v-if="discounts"
+                  class="grid grid-cols-5 gap-1 text-[0.65rem] sm:text-sm"
+                >
+                  <li
+                    class="flex flex-col gap-2 border group p-2 rounded-md cursor-pointer hover:bg-gray-100"
+                    v-for="discount in discounts"
+                    :key="discount._id"
+                    @click="() => updateProductDiscount(discount._id)"
+                  >
+                    <h3 class="text-base">{{ discount.name }}</h3>
+                    <p class="whitespace-nowrap font-semibold text-gray-800">
+                      Giảm {{ discount.discountPercentage }}%
+                    </p>
+                    <p class="whitespace-nowrap text-gray-500">
+                      Từ: {{ formatDate(discount.startDate) }}
+                    </p>
+                    <p class="whitespace-nowrap text-gray-500">
+                      Đến: {{ formatDate(discount.endDate) }}
+                    </p>
+                  </li>
+                </ul>
+              </template>
+            </SelectModal>
           </div>
         </div>
 

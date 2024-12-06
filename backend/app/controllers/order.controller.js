@@ -15,15 +15,29 @@ exports.create = async (req, res, next) => {
   try {
     const session = MongoDB.client.startSession();
     const orderService = new OrderService(MongoDB.client);
-    const productService = new ProductService(MongoDB.client);
-    const productsCollection = MongoDB.client
+    const productCollection = MongoDB.client
       .db("ql-vat-tu-nong-nghiep")
       .collection("product");
+    const counterCollection = MongoDB.client
+      .db("ql-vat-tu-nong-nghiep")
+      .collection("counter");
+
+    // Tạo mã đơn hàng
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
+    const sequenceDoc = await counterCollection.findOneAndUpdate(
+      { _id: today }, // Dựa theo ngày
+      { $inc: { seq: 1 } }, // Tăng sequence
+      { upsert: true, returnDocument: "after" }
+    );
+
+    const sequence = sequenceDoc.seq.toString().padStart(3, "0"); // Định dạng 3 chữ số
+    const orderCode = `ORD-${today}-${sequence}`;
 
     const order = {
       customer: convertToObjectId(req.body.customer),
       date: new Date(),
       totalAmount: new Double(req.body.totalAmount),
+      orderCode,
       status: "pending",
       createdBy: convertToObjectId(req.body.createdBy),
       orderDetails: req.body.orderDetails,
@@ -48,7 +62,7 @@ exports.create = async (req, res, next) => {
       for (const item of order.orderDetails) {
         const { productId, quantity } = item;
 
-        const updateResult = await productsCollection.updateOne(
+        const updateResult = await productCollection.updateOne(
           {
             _id: convertToObjectId(productId),
             stockQuantity: { $gte: quantity },
@@ -242,32 +256,65 @@ exports.getOrders2 = async (req, res, next) => {
   }
 };
 
-exports.getOrderInfo = async (req, res, next) => {
-  let customers = [];
-  let users = [];
+// exports.getOrderInfo = async (req, res, next) => {
+//   let customers = [];
+//   let users = [];
 
-  try {
-    const customerService = new CustomerService(MongoDB.client);
-    const userService = new UserService(MongoDB.client);
+//   try {
+//     const customerService = new CustomerService(MongoDB.client);
+//     const userService = new UserService(MongoDB.client);
 
-    customers = await customerService.find({});
-    users = await userService.find({});
-  } catch (error) {
-    return next(new ApiError(500, "An error occur while retrieving docs"));
-  }
+//     customers = await customerService.find({});
+//     users = await userService.find({});
+//   } catch (error) {
+//     return next(new ApiError(500, "An error occur while retrieving docs"));
+//   }
 
-  return res.send({
-    customers,
-    users,
-  });
-};
+//   return res.send({
+//     customers,
+//     users,
+//   });
+// };
 
 exports.findOne = async (req, res, next) => {
   try {
     const orderService = new OrderService(MongoDB.client);
-    const document = await orderService.findById(req.params.id);
+    const document = await orderService.Collection.aggregate([
+      {
+        $match: { _id: new ObjectId(req.params.id) },
+      },
+      {
+        $lookup: {
+          from: "customer",
+          localField: "customer",
+          foreignField: "_id",
+          as: "customerInfo",
+        },
+      },
+      {
+        $lookup: {
+          from: "user",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdByInfo",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          orderCode: 1,
+          customerInfo: 1,
+          date: 1,
+          totalAmount: 1,
+          status: 1,
+          createdByInfo: 1,
+          orderDetails: 1,
+        },
+      },
+    ]).toArray();
+
     if (!document) return next(new ApiError(404, "Doc not found!"));
-    return res.send(document);
+    return res.json(document[0]);
   } catch (error) {
     return next(
       new ApiError(500, `Error retrieving doc with id=${req.params.id}`)

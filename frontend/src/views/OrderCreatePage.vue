@@ -115,6 +115,7 @@ const addProduct = (product) => {
       {
         productId: _id,
         productName: _name,
+        productImage: product.imageUrls[0] || "",
         price: _price,
         quantity: 1,
         subtotal: _price,
@@ -247,6 +248,7 @@ watchEffect(fetchCustomers);
           </template>
         </SelectModal>
 
+        <!-- CART -->
         <div class="col-span-2 bg-yellow-50 p-3 rounded-md">
           <div class="flex gap-2 justify-between text-xl font-bold mb-4">
             <h2 class="text-gray-700">Giỏ hàng</h2>

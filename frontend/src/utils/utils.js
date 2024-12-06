@@ -1,3 +1,24 @@
+export const STATUS_MAPPING = {
+  pending: {
+    name: "đang xử lý",
+    style: "text-cyan-600 bg-cyan-100 hover:bg-cyan-200",
+  },
+  completed: {
+    name: "hoàn thành",
+    style: "text-green-600 bg-green-100 hover:bg-green-200",
+  },
+  cancelled: {
+    name: "đã hủy",
+    style: "text-red-600 bg-red-100 hover:bg-red-200",
+  },
+};
+
+export const STATUS = {
+  pending: "pending",
+  completed: "completed",
+  cancelled: "cancelled",
+};
+
 export function formatCurrency(value) {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",

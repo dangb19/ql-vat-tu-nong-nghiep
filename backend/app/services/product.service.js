@@ -6,26 +6,16 @@ class Product extends AppService {
     super(client, "product");
   }
 
-  // extractData(payload) {
-  //   const product = {
-  //     name: payload.name,
-  //     description: payload.description,
-  //     price: payload.price,
-  //     costPrice: payload.costPrice,
-  //     stockQuantity: payload.stockQuantity,
-  //     imageUrls: payload.imageUrls,
-  //     discount: payload.discount,
-  //     category: payload.category,
-  //     manufacturer: payload.manufacturer,
-  //     supplier: payload.supplier,
-  //   };
+  async removeDiscount(id) {
+    const filter = {
+      _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
+    };
+    const result = await this.Collection.findOneAndUpdate(filter, {
+      $unset: { discount: "" },
+    });
 
-  //   Object.keys(product).forEach((key) => {
-  //     return product[key] === undefined && delete product[key];
-  //   });
-
-  //   return product;
-  // }
+    return result;
+  }
 
   async getProductWithDetails(productId) {
     const product = await this.Collection.aggregate([

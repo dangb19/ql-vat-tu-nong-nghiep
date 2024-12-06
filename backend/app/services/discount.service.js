@@ -4,7 +4,6 @@ const AppService = require("./app.service");
 class Discount extends AppService {
   constructor(client) {
     super(client, "discount");
-    console.log(this);
     this.createTTLIndex();
   }
 

@@ -10,7 +10,7 @@ class Inventory extends AppService {
       product: payload.product,
       quantity: payload.quantity,
       createdBy: payload.createdBy,
-      totalCost: payload.totalCost,
+      costPrice: payload.costPrice,
       date: payload.date,
       supplier: payload.supplier,
     };

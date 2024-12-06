@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from "vue";
 import PlusIcon from "../icons/PlusIcon.vue";
 import { formatDate, formatCurrency } from "../../utils/utils";
+import OrderStatus from "./OrderStatus.vue";
+import orderService from "../../services/order.service";
 
 const props = defineProps({
   orders: Array,
@@ -9,7 +10,12 @@ const props = defineProps({
 
 const emit = defineEmits(["updateSortFieldAndOrder", "reFetchData"]);
 
-const deleteId = ref();
+const updateStatus = async (orderId, newStatus) => {
+  const res = await orderService.update(orderId, { status: newStatus });
+  if (res) {
+    emit("reFetchData");
+  }
+};
 </script>
 <template>
   <div class="p-4">
@@ -41,12 +47,12 @@ const deleteId = ref();
               Giá trị đơn hàng
             </th>
             <th
-              class="border border-gray-300 px-4 py-2 text-left cursor-pointer"
+              class="border border-gray-300 px-4 py-2 text-center cursor-pointer"
             >
               Trạng thái
             </th>
             <th
-              class="border border-gray-300 px-4 py-2 text-left cursor-pointer"
+              class="border border-gray-300 px-4 py-2 text-center cursor-pointer"
             >
               Ngày đặt
             </th>
@@ -65,12 +71,20 @@ const deleteId = ref();
               {{ formatCurrency(order.totalAmount) }}
             </td>
             <td class="border border-gray-300 px-4 py-2 text-center">
-              {{ order.status }}
+              <div class="flex items-stretch">
+                <OrderStatus
+                  :status="order.status"
+                  classes="grow"
+                  @updateStatus="
+                    (newStatus) => updateStatus(order._id, newStatus)
+                  "
+                />
+              </div>
             </td>
             <td class="border border-gray-300 px-4 py-2 text-center">
               {{ formatDate(order.date) }}
             </td>
-            <td class="border border-gray-300 px-4 py-2 text-center">
+            <td class="border border-gray-300 px-4 py-2 text-left">
               {{ order.createdByInfo[0].name }}
             </td>
             <td class="border border-gray-300 px-4 py-2 space-x-2">
@@ -84,18 +98,8 @@ const deleteId = ref();
                 }"
                 class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
-                Xem
+                Xem chi tiết
               </router-link>
-              <button
-                @click="
-                  () => {
-                    deleteId = order._id;
-                  }
-                "
-                class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Xóa
-              </button>
             </td>
           </tr>
         </tbody>
