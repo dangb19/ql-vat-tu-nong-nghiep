@@ -77,7 +77,7 @@ exports.create = async (req, res, next) => {
       }
     });
 
-    return res.send("Created order success!");
+    return res.send("Created order successfully!");
   } catch (error) {
     console.error("Transaction aborted: ", error);
 

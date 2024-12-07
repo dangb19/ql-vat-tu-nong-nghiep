@@ -5,6 +5,7 @@ const props = defineProps({
   showModal: Boolean,
   label: String,
   classes: String,
+  onClick: Function,
 });
 </script>
 
@@ -43,7 +44,12 @@ const props = defineProps({
               <button
                 type="button"
                 class="modal-default-button bg-yellow-100 py-3 px-4 rounded-md"
-                @click="$emit('closeModal')"
+                @click="
+                  () => {
+                    if (onClick) onClick();
+                    $emit('closeModal');
+                  }
+                "
               >
                 Lưu
               </button>

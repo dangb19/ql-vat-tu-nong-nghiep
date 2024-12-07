@@ -1,14 +1,48 @@
+const { Double, ObjectId } = require("mongodb");
 const ApiError = require("../api-error");
 const InventoryService = require("../services/inventory.service");
 
 const MongoDB = require("../utils/mongodb.util");
 
+const convertToObjectId = (str) =>
+  ObjectId.isValid(str) ? new ObjectId(str) : null;
+
 exports.create = async (req, res, next) => {
   try {
+    const session = MongoDB.client.startSession();
     const inventoryService = new InventoryService(MongoDB.client);
-    const document = await inventoryService.create(req.body);
+    const productCollection = MongoDB.client
+      .db("ql-vat-tu-nong-nghiep")
+      .collection("product");
 
-    return res.send(document);
+    const inventory = {
+      costPrice: new Double(req.body.costPrice),
+      quantity: parseInt(req.body.quantity, 10),
+      supplier: convertToObjectId(req.body.supplier),
+      product: convertToObjectId(req.body.product),
+      createdBy: convertToObjectId(req.body.createdBy),
+      date: new Date(),
+    };
+
+    await session.withTransaction(async () => {
+      // 1. Tạo inventory
+      await inventoryService.create(inventory);
+
+      // 2. Cập nhật stockQuantity của sản phẩm
+      const updateResult = await productCollection.updateOne(
+        {
+          _id: inventory.product,
+        },
+        { $inc: { stockQuantity: inventory.quantity } }, // Tăng số lượng tồn kho của sản phẩm
+        { session }
+      );
+
+      if (updateResult.matchedCount === 0) {
+        throw new Error(`Insufficient stock for product ${productId}`);
+      }
+    });
+
+    return res.send("Created inventory successfully!");
   } catch (error) {
     console.log("error", error);
 

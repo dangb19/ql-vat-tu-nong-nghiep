@@ -1,25 +1,45 @@
 <script setup>
-import { computed, ref, watchEffect } from "vue";
+import { computed, reactive, ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import productService from "../services/product.service";
 import discountService from "../services/discount.service";
+import supplierService from "../services/supplier.service";
+import inventoryService from "../services/inventory.service";
 
 import { formatCurrency, formatDate } from "../utils/utils";
 import Link from "../components/UI/Link.vue";
 import LinkButton from "../components/UI/LinkButton.vue";
 import SelectModal from "../components/order/SelectModal.vue";
+import Input from "../components/form/Input.vue";
+import { useAuthStore } from "../store";
 
 const route = useRoute();
+const store = useAuthStore();
 const product = ref(null);
 const discounts = ref([]);
 const showDiscountModal = ref(false);
+const suppliers = ref([]);
+const showInventoryModal = ref(false);
+const inventory = reactive({
+  supplier: "",
+  costPrice: "",
+  quantity: "",
+});
 
+const closeInventoryModal = () => (showInventoryModal.value = false);
+const openInventoryModal = () => (showInventoryModal.value = true);
 const closeDiscountModal = () => (showDiscountModal.value = false);
 const openDiscountModal = () => (showDiscountModal.value = true);
 const fetchDiscounts = async () => {
   const res = await discountService.getAll();
   if (res) {
     discounts.value = res;
+  }
+};
+const fetchSuppliers = async () => {
+  const res = await supplierService.getAll();
+  if (res) {
+    suppliers.value = res;
   }
 };
 const fetchProductDetails = async () => {
@@ -42,7 +62,30 @@ const removeProductDiscount = async () => {
     closeDiscountModal();
   }
 };
+const inventoryIsValid = (inv) => {
+  return Object.values(inv).every((value) => {
+    if (Array.isArray(value)) {
+      // Kiểm tra mảng rỗng
+      return value.length > 0;
+    }
+    // Kiểm tra chuỗi rỗng, số 0, hoặc các giá trị khác
+    return value !== "" && value !== 0;
+  });
+};
+
+const submit = async () => {
+  if (!inventoryIsValid(inventory)) return;
+  await inventoryService.create({
+    ...inventory,
+    product: route.params.id,
+    createdBy: store.user._id,
+  });
+
+  fetchProductDetails();
+};
+
 watchEffect(fetchDiscounts);
+watchEffect(fetchSuppliers);
 watchEffect(fetchProductDetails);
 </script>
 
@@ -84,9 +127,52 @@ watchEffect(fetchProductDetails);
             </p>
           </div>
           <div>
-            <Link route-name="login" class="text-lg text-main"
-              >Nhập&nbsp;hàng&nbsp;&#129125;</Link
+            <SelectModal
+              label="Nhập hàng"
+              :showModal="showInventoryModal"
+              @closeModal="closeInventoryModal"
+              @openModal="openInventoryModal"
+              :onClick="submit"
             >
+              <template v-slot:title>
+                <h3 class="text-lg">Nhập hàng</h3>
+              </template>
+              <template v-slot:content>
+                <form class="grid grid-cols-2 gap-3 max-w-[40rem]">
+                  <Input
+                    type="number"
+                    name="price"
+                    placeholder="giá nhập"
+                    v-model="inventory.costPrice"
+                    required
+                  />
+                  <Input
+                    type="number"
+                    name="quantity"
+                    placeholder="số lượng"
+                    v-model="inventory.quantity"
+                    required
+                  />
+                  <select
+                    v-if="suppliers"
+                    name="supplier"
+                    v-model="inventory.supplier"
+                    placeholder="chọn nhà cung cấp"
+                    required
+                    class="col-span-2 bg-yellow-100 py-3 px-4 text-gray-800 placeholder:text-gray-600 outline-none focus:outline-yellow-400 rounded-md"
+                  >
+                    <option disabled value="">chọn nhà cung cấp</option>
+                    <option
+                      v-for="supp in suppliers"
+                      :key="supp._id"
+                      :value="supp._id"
+                    >
+                      {{ supp.name }}
+                    </option>
+                  </select>
+                </form>
+              </template>
+            </SelectModal>
           </div>
         </div>
 
@@ -159,14 +245,6 @@ watchEffect(fetchProductDetails);
           <h3>NSX:</h3>
           <p class="text-gray-600">
             {{ product.manufacturerInfo[0].name }}
-          </p>
-        </div>
-
-        <!-- supplier -->
-        <div class="flex justify-between gap-2 grow mt-4 text-lg">
-          <h3>Nguồn nhập:</h3>
-          <p class="text-gray-600">
-            {{ product.supplierInfo[0].name }}
           </p>
         </div>
 

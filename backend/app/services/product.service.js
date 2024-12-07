@@ -38,14 +38,6 @@ class Product extends AppService {
       },
       {
         $lookup: {
-          from: "supplier",
-          localField: "supplier",
-          foreignField: "_id",
-          as: "supplierInfo",
-        },
-      },
-      {
-        $lookup: {
           from: "discount",
           localField: "discount",
           foreignField: "_id",
@@ -61,7 +53,6 @@ class Product extends AppService {
           description: 1,
           categoryInfo: { _id: 1, name: 1 }, // Chỉ lấy tên category
           manufacturerInfo: { _id: 1, name: 1 }, // Chỉ lấy tên manufacturer
-          supplierInfo: { _id: 1, name: 1 }, // Chỉ lấy tên supplier
           discountInfo: { _id: 1, name: 1, discountPercentage: 1 }, // Chỉ lấy số tiền giảm giá
           imageUrls: 1,
         },

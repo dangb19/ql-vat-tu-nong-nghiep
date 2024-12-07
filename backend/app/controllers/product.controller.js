@@ -19,7 +19,6 @@ exports.create = async (req, res, next) => {
       name: req.body.name,
       category: convertToObjectId(req.body.category),
       manufacturer: convertToObjectId(req.body.manufacturer),
-      supplier: convertToObjectId(req.body.supplier),
       discount: convertToObjectId(req.body.discount),
       price: new Double(req.body.price),
       stockQuantity: parseInt(req.body.stockQuantity, 10),

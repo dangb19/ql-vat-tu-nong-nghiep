@@ -41,7 +41,7 @@ const submit = async () => {
         <Input
           type="text"
           name="name"
-          placeholder="tên NSX"
+          placeholder="tên nhà cung cấp"
           v-model="supplier.name"
           class="col-span-2"
           required

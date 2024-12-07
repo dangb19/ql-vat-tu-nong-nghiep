@@ -12,6 +12,7 @@ const discountRouter = require("./app/routes/discount.route");
 const inventoryRouter = require("./app/routes/inventory.route");
 const productRouter = require("./app/routes/product.route");
 const orderRouter = require("./app/routes/order.route");
+const reportRouter = require("./app/routes/report.route");
 
 const app = express(express.json());
 app.use(cookieParser());
@@ -37,6 +38,7 @@ app.use("/api/discount", discountRouter);
 app.use("/api/inventory", inventoryRouter);
 app.use("/api/product", productRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/report", reportRouter);
 
 // Error Handler
 app.use((req, res, next) => {
