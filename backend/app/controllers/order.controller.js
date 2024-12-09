@@ -35,7 +35,7 @@ exports.create = async (req, res, next) => {
 
     const order = {
       customer: convertToObjectId(req.body.customer),
-      date: new Date(),
+      date: new Date(new Date().setFullYear(2024, 8, 14)),
       totalAmount: new Double(req.body.totalAmount),
       orderCode,
       status: "pending",
@@ -116,9 +116,6 @@ exports.getOrders = async (req, res, next) => {
   const limitNum = parseInt(limit);
   const skip = (pageNum - 1) * limitNum;
 
-  // Tạo điều kiện tìm kiếm
-  const searchCriteria = {};
-
   // Tạo điều kiện sắp xếp
   const sortOptions = { [sortField]: sortOrder === "asc" ? 1 : -1 };
 
@@ -127,9 +124,6 @@ exports.getOrders = async (req, res, next) => {
 
     // Sử dụng aggregation để ánh xạ thông tin khách hàng và người tạo
     const pipeline = [
-      // Áp dụng tiêu chí tìm kiếm
-      { $match: searchCriteria },
-
       // Lookup thông tin khách hàng
       {
         $lookup: {
@@ -150,6 +144,26 @@ exports.getOrders = async (req, res, next) => {
         },
       },
 
+      // Giải nén mảng customerInfo (nếu chỉ lấy 1 khách hàng)
+      { $unwind: { path: "$customerInfo", preserveNullAndEmptyArrays: true } },
+
+      // Giải nén mảng createdByInfo (nếu chỉ lấy 1 người tạo)
+      { $unwind: { path: "$createdByInfo", preserveNullAndEmptyArrays: true } },
+
+      // Áp dụng tiêu chí tìm kiếm (nếu có)
+      ...(q
+        ? [
+            {
+              $match: {
+                $or: [
+                  { "customerInfo.name": { $regex: q, $options: "i" } },
+                  { "createdByInfo.name": { $regex: q, $options: "i" } },
+                ],
+              },
+            },
+          ]
+        : []),
+
       // Sắp xếp
       { $sort: sortOptions },
 
@@ -161,7 +175,6 @@ exports.getOrders = async (req, res, next) => {
       {
         $project: {
           _id: 1,
-
           "customerInfo.name": 1,
           date: 1,
           totalAmount: 1,
@@ -176,8 +189,16 @@ exports.getOrders = async (req, res, next) => {
       pipeline
     ).toArray();
 
-    // Đếm tổng số bản ghi thỏa mãn điều kiện
-    const total = await orderService.Collection.countDocuments(searchCriteria);
+    // Đếm tổng số bản ghi thỏa mãn điều kiện (sau khi áp dụng pipeline)
+    const totalPipeline = [
+      ...pipeline.slice(0, -3), // Bỏ các bước phân trang và chọn trường
+      { $count: "total" },
+    ];
+
+    const totalResult = await orderService.Collection.aggregate(
+      totalPipeline
+    ).toArray();
+    const total = totalResult[0]?.total || 0;
 
     // Trả về dữ liệu và thông tin phân trang
     return res.send({
@@ -256,25 +277,127 @@ exports.getOrders2 = async (req, res, next) => {
   }
 };
 
-// exports.getOrderInfo = async (req, res, next) => {
-//   let customers = [];
-//   let users = [];
+exports.getOrdersByCustomer = async (req, res, next) => {
+  const { customerId } = req.params; // Lấy customerId từ URL
+  const { page = 1, limit = 10 } = req.query;
 
-//   try {
-//     const customerService = new CustomerService(MongoDB.client);
-//     const userService = new UserService(MongoDB.client);
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
 
-//     customers = await customerService.find({});
-//     users = await userService.find({});
-//   } catch (error) {
-//     return next(new ApiError(500, "An error occur while retrieving docs"));
-//   }
+  try {
+    const orderService = new OrderService(MongoDB.client);
 
-//   return res.send({
-//     customers,
-//     users,
-//   });
-// };
+    const orders = await orderService.Collection.find({
+      customer: new ObjectId(customerId),
+    })
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .toArray();
+
+    const total = await orderService.Collection.countDocuments({
+      customer: new ObjectId(customerId),
+    });
+
+    return res.send({
+      orders,
+      total,
+    });
+  } catch (error) {
+    console.error("Error retrieving orders by customer:", error);
+    return next(new ApiError(500, "An error occurred while retrieving orders"));
+  }
+};
+
+exports.getTopSellingProducts = async (req, res, next) => {
+  try {
+    const orderService = new OrderService(MongoDB.client);
+
+    const pipeline = [
+      { $unwind: "$orderDetails" },
+
+      // Nhóm theo productId và tính tổng số lượng
+      {
+        $group: {
+          _id: "$orderDetails.productId", // Nhóm theo productId
+          productName: { $first: "$orderDetails.productName" }, // Lấy tên sản phẩm
+          productImage: { $first: "$orderDetails.productImage" }, // Lấy ảnh sản phẩm
+          totalQuantity: { $sum: "$orderDetails.quantity" }, // Tính tổng số lượng
+        },
+      },
+
+      { $sort: { totalQuantity: -1 } },
+
+      { $limit: 10 },
+    ];
+
+    const topProducts = await orderService.Collection.aggregate(
+      pipeline
+    ).toArray();
+
+    return res.send(topProducts);
+  } catch (error) {
+    console.error("Error retrieving top-selling products:", error);
+    return next(
+      new ApiError(
+        500,
+        "An error occurred while retrieving top-selling products"
+      )
+    );
+  }
+};
+
+exports.getTopCustomers = async (req, res, next) => {
+  try {
+    const orderService = new OrderService(MongoDB.client);
+
+    const pipeline = [
+      {
+        $group: {
+          _id: "$customer",
+          totalSpent: { $sum: "$totalAmount" },
+          orderCount: { $sum: 1 },
+        },
+      },
+      { $sort: { totalSpent: -1 } },
+
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: "customer", // Collection khách hàng
+          localField: "_id", // ID của khách hàng trong order
+          foreignField: "_id", // ID của khách hàng trong customer
+          as: "customerInfo",
+        },
+      },
+
+      { $unwind: "$customerInfo" },
+
+      {
+        $project: {
+          _id: 1,
+          totalSpent: 1,
+          orderCount: 1,
+          "customerInfo.name": 1,
+          "customerInfo.email": 1,
+          "customerInfo.phone": 1,
+        },
+      },
+    ];
+
+    const topCustomers = await orderService.Collection.aggregate(
+      pipeline
+    ).toArray();
+
+    return res.send(topCustomers);
+  } catch (error) {
+    console.error("Error retrieving top customers:", error);
+    return next(
+      new ApiError(500, "An error occurred while retrieving top customers")
+    );
+  }
+};
 
 exports.findOne = async (req, res, next) => {
   try {

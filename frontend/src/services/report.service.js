@@ -8,5 +8,9 @@ class ReportService {
   async getTotalRevenueProfit() {
     return (await this.api.get(`/total-revenue-profit`)).data;
   }
+  async getTotalRevenueProfitByMonth(year) {
+    return (await this.api.get(`/total-revenue-profit-by-month?year=${year}`))
+      .data;
+  }
 }
 export default new ReportService();

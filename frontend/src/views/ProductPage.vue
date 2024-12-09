@@ -12,7 +12,7 @@ const products = ref([]);
 const sortField = ref("name");
 const sortOrder = ref("asc");
 const page = ref(1);
-const limit = 10;
+const limit = 5;
 const totalProducts = ref(0);
 
 const fetchProducts = async () => {

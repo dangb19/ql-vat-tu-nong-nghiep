@@ -5,7 +5,7 @@ const props = defineProps({
 });
 </script>
 <template>
-  <router-link :to="to" class="group text-center">
+  <router-link :to="to" class="group flex flex-col h-full text-center">
     <div class="overflow-hidden p-4">
       <img
         class="w-full rounded-md object-cover aspect-[9/16] group-hover:scale-105 transition-transform duration-300"
@@ -15,7 +15,8 @@ const props = defineProps({
     </div>
 
     <h3 class="text-md px-4">{{ product.name }}</h3>
-    <p class="whitespace-nowrap p-4">
+    <!-- Phần tử muốn căn dưới đáy -->
+    <p class="mt-auto whitespace-nowrap p-4">
       <span v-if="product.stockQuantity > 10" class="font-light"
         >Số lượng:
       </span>

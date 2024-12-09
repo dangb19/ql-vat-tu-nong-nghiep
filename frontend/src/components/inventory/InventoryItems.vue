@@ -18,7 +18,10 @@ const props = defineProps({
         {{ inventory.productInfo[0]?.name || "?" }}
       </p>
       <p>Số lượng: {{ inventory.quantity }}</p>
-      <p>Tổng giá trị: {{ formatCurrency(inventory.totalCost) }}</p>
+      <p>
+        Giá nhập:
+        {{ formatCurrency(inventory.costPrice) }}
+      </p>
       <p>Nhà cung cấp: {{ inventory.supplierInfo[0]?.name || "?" }}</p>
       <p>Người lập: {{ inventory.createdByInfo[0]?.name || "?" }}</p>
       <p>Vào {{ formatDate(inventory.date) }}</p>

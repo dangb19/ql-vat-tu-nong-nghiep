@@ -176,7 +176,7 @@ exports.getInventories = async (req, res, next) => {
         $project: {
           date: 1,
           quantity: 1,
-          totalCost: 1,
+          costPrice: 1,
           "productInfo.name": 1,
           "createdByInfo.name": 1,
           "supplierInfo.name": 1,

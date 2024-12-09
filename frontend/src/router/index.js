@@ -31,6 +31,7 @@ import ReportPage from "../views/ReportPage.vue";
 import OrderPage from "../views/OrderPage.vue";
 import OrderCreatePage from "../views/OrderCreatePage.vue";
 import OrderDetailsPage from "../views/OrderDetailsPage.vue";
+import CustomerOrdersPage from "../views/CustomerOrdersPage.vue";
 
 const routes = [
   {
@@ -96,6 +97,11 @@ const routes = [
         path: "create",
         name: "customer-create",
         component: CustomerCreatePage,
+      },
+      {
+        path: ":id/orders",
+        name: "customer-orders",
+        component: CustomerOrdersPage,
       },
       {
         path: ":id",

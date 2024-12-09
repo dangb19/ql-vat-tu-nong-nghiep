@@ -65,7 +65,7 @@ const updateStatus = async (orderId, newStatus) => {
         <tbody>
           <tr v-for="(order, index) in orders" :key="index">
             <td class="border border-gray-300 px-4 py-2 break-words">
-              {{ order.customerInfo[0]?.name }}
+              {{ order.customerInfo?.name }}
             </td>
             <td class="border border-gray-300 px-4 py-2 break-words">
               {{ formatCurrency(order.totalAmount) }}
@@ -85,7 +85,7 @@ const updateStatus = async (orderId, newStatus) => {
               {{ formatDate(order.date) }}
             </td>
             <td class="border border-gray-300 px-4 py-2 text-left">
-              {{ order.createdByInfo[0].name }}
+              {{ order.createdByInfo.name }}
             </td>
             <td class="border border-gray-300 px-4 py-2 space-x-2">
               <!-- TEPPPPPP----------------- -->

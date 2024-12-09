@@ -21,7 +21,16 @@ class OrderService {
   async getOrderInfo() {
     return (await this.api.get(`/order-info`)).data;
   }
+  async getTopSellingProducts() {
+    return (await this.api.get(`/top-selling`)).data;
+  }
+  async getTopCustomers() {
+    return (await this.api.get(`/top-customers`)).data;
+  }
 
+  async getOrdersByCustomer(customerId) {
+    return (await this.api.get(`/customer-orders/${customerId}`)).data;
+  }
   async get(id) {
     return (await this.api.get(`/${id}`)).data;
   }

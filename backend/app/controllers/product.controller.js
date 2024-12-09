@@ -19,9 +19,9 @@ exports.create = async (req, res, next) => {
       name: req.body.name,
       category: convertToObjectId(req.body.category),
       manufacturer: convertToObjectId(req.body.manufacturer),
-      discount: convertToObjectId(req.body.discount),
+      discount: convertToObjectId(req.body.discount) || "",
       price: new Double(req.body.price),
-      stockQuantity: parseInt(req.body.stockQuantity, 10),
+      stockQuantity: 0,
       imageUrls: req.body.imageUrls,
       description: req.body.description,
     };
@@ -41,7 +41,7 @@ exports.create = async (req, res, next) => {
 exports.findAll = async (req, res, next) => {
   let documents = [];
 
-  const { sortField = "name", sortOrder = "asc", limit = 10 } = req.query;
+  const { sortField = "name", sortOrder = "asc", limit = 5 } = req.query;
 
   // Chuyển đổi sortOrder sang dạng số để dùng với MongoDB
   const sortOption = { [sortField]: sortOrder === "asc" ? 1 : -1 };
@@ -95,7 +95,7 @@ exports.getProducts = async (req, res, next) => {
     sortField = "name",
     sortOrder = "asc",
     page = 1,
-    limit = 10,
+    limit = 5,
     q = "",
   } = req.query;
 

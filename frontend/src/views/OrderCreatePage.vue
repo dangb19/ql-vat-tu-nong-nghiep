@@ -12,6 +12,7 @@ import { convertToISOString } from "../utils/utils";
 import SearchBar from "../components/form/SearchBar.vue";
 import SelectModal from "../components/order/SelectModal.vue";
 import { formatCurrency } from "../utils/utils";
+import Pagination from "../components/pagination/Pagination.vue";
 
 const store = useAuthStore();
 const router = useRouter();
@@ -72,23 +73,25 @@ const submit = async () => {
   }
 };
 
+const currentProductPage = ref(1);
 const fetchProducts = async () => {
   const res = await productService.getProducts(
     "stockQuantity",
     "desc",
-    1,
-    10,
+    currentProductPage.value,
+    8,
     searchProduct.value
   );
   if (res) {
     productData.value = res;
   }
 };
+const currentCustomerPage = ref(1);
 const fetchCustomers = async () => {
   const res = await customerService.getCustomers(
     "stockQuantity",
     "desc",
-    1,
+    currentCustomerPage.value,
     10,
     searchCustomer.value
   );
@@ -131,7 +134,7 @@ const addProduct = (product) => {
 const increaseQuantity = (id) => {
   const index = order.orderDetails.findIndex((ord) => ord.productId === id);
   const stockQuantity =
-    productData.value?.products.find((ord) => ord._id === id).stockQuantity ||
+    productData.value?.products.find((ord) => ord._id === id)?.stockQuantity ||
     0;
 
   if (index >= 0 && order.orderDetails[index].quantity < stockQuantity) {
@@ -180,10 +183,10 @@ watchEffect(fetchCustomers);
           <template v-slot:content>
             <ul
               v-if="productData?.products"
-              class="grid grid-cols-5 sm:grid-cols-5 xl:grid-cols-10 gap-1 text-[0.65rem] sm:text-sm"
+              class="grid grid-cols-4 sm:grid-cols-4 xl:grid-cols-8 gap-1 text-[0.65rem] sm:text-sm"
             >
               <li
-                class="flex flex-col gap-2 border group text-center cursor-pointer"
+                class="flex flex-col gap-2 max-h-64 md:max-h-none border group text-center cursor-pointer"
                 :class="{
                   'opacity-50': product.stockQuantity === 0,
                   '!cursor-not-allowed': product.stockQuantity === 0,
@@ -213,6 +216,16 @@ watchEffect(fetchCustomers);
                 </p>
               </li>
             </ul>
+            <!-- Pagination -->
+            <Pagination
+              :totalItems="productData.total"
+              :itemsPerPage="8"
+              @onPageChange="
+                (newPage) => {
+                  currentProductPage = newPage;
+                }
+              "
+            />
           </template>
         </SelectModal>
 
@@ -233,18 +246,33 @@ watchEffect(fetchCustomers);
           <template v-slot:content>
             <ul
               v-if="customerData?.customers"
-              class="grid grid-cols-5 gap-1 text-[0.65rem] sm:text-sm"
+              class="grid grid-cols-2 md:grid-cols-5 gap-1 text-[0.65rem] sm:text-sm"
             >
               <li
                 class="flex flex-col gap-2 border group text-center cursor-pointer hover:bg-gray-100"
                 v-for="customer in customerData.customers"
                 :key="customer._id"
-                @click="() => changeOrderCustomer(customer)"
+                @click="
+                  () => {
+                    changeOrderCustomer(customer);
+                    closeCustomerModal();
+                  }
+                "
               >
-                <h3>{{ customer.name }}</h3>
+                <h3 class="text-gray-700 font-semibold">{{ customer.name }}</h3>
                 <p class="whitespace-nowrap">SĐT: {{ customer.phoneNumber }}</p>
               </li>
             </ul>
+            <!-- Pagination -->
+            <Pagination
+              :totalItems="customerData.total"
+              :itemsPerPage="10"
+              @onPageChange="
+                (newPage) => {
+                  currentCustomerPage = newPage;
+                }
+              "
+            />
           </template>
         </SelectModal>
 

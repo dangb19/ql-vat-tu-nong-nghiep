@@ -162,3 +162,131 @@ exports.getTotalRevenueProfit = async (req, res, next) => {
     return next(new ApiError(500, "An error occur while retrieving doc"));
   }
 };
+
+exports.getTotalRevenueProfitByMonth = async (req, res, next) => {
+  try {
+    const orderService = new OrderService(MongoDB.client);
+
+    const year = req.query.year || new Date().getFullYear();
+
+    const pipeline = [
+      // Lọc các đơn hàng trong năm được chỉ định
+      {
+        $match: {
+          date: {
+            $gte: new Date(year, 0, 1), // Ngày đầu năm
+            $lt: new Date(year + 1, 0, 1), // Ngày đầu năm sau
+          },
+        },
+      },
+      // Nhóm doanh thu theo tháng
+      {
+        $group: {
+          _id: { month: { $month: "$date" } },
+          totalRevenue: { $sum: "$totalAmount" },
+          orders: { $push: "$orderDetails" },
+        },
+      },
+      // Unwind orderDetails
+      {
+        $unwind: "$orders",
+      },
+      {
+        $unwind: "$orders", // Nếu orderDetails là mảng lồng nhau
+      },
+      // Ghép với inventory để lấy giá nhập
+      {
+        $lookup: {
+          from: "inventory",
+          let: { productId: "$orders.productId" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$product", "$$productId"] } } },
+            { $sort: { date: -1 } }, // Lấy giá nhập mới nhất
+            { $limit: 1 },
+          ],
+          as: "inventoryData",
+        },
+      },
+      {
+        $unwind: { path: "$inventoryData", preserveNullAndEmptyArrays: true },
+      },
+      // Tính chi phí từng sản phẩm
+      {
+        $group: {
+          _id: {
+            month: "$_id.month",
+            productId: "$orders.productId",
+          },
+          averageCostPrice: { $avg: "$inventoryData.costPrice" },
+          quantitySold: { $sum: "$orders.quantity" },
+        },
+      },
+      {
+        $project: {
+          month: "$_id.month",
+          totalCost: { $multiply: ["$averageCostPrice", "$quantitySold"] },
+        },
+      },
+      // Tính tổng chi phí theo tháng
+      {
+        $group: {
+          _id: "$month",
+          totalCost: { $sum: "$totalCost" },
+        },
+      },
+      // Ghép lại doanh thu theo tháng
+      {
+        $lookup: {
+          from: "order",
+          let: { month: "$_id" }, // Tháng hiện tại
+          pipeline: [
+            {
+              $match: {
+                date: {
+                  $gte: new Date(year, 0, 1),
+                  $lt: new Date(year + 1, 0, 1),
+                },
+              },
+            },
+            {
+              $group: {
+                _id: { month: { $month: "$date" } },
+                totalRevenue: { $sum: "$totalAmount" },
+              },
+            },
+            {
+              $match: { $expr: { $eq: ["$_id.month", "$$month"] } }, // Chỉ lấy tháng khớp
+            },
+          ],
+          as: "revenueData",
+        },
+      },
+      {
+        $unwind: "$revenueData",
+      },
+      // Tính lợi nhuận
+      {
+        $project: {
+          _id: 1, // Tháng
+          totalRevenue: "$revenueData.totalRevenue",
+          totalCost: 1,
+          totalProfit: {
+            $subtract: ["$revenueData.totalRevenue", "$totalCost"],
+          }, // Lợi nhuận = Doanh thu - Chi phí
+        },
+      },
+      // Sắp xếp theo tháng
+      {
+        $sort: { _id: 1 },
+      },
+    ];
+
+    const documents = await orderService.Collection.aggregate(
+      pipeline
+    ).toArray();
+
+    return res.json(documents);
+  } catch (error) {
+    return next(new ApiError(500, "An error occur while retrieving doc"));
+  }
+};

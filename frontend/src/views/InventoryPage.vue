@@ -5,13 +5,11 @@ import inventoryService from "../services/inventory.service";
 import ProductItems from "../components/ProductItems.vue";
 import InventoryItems from "../components/inventory/InventoryItems.vue";
 import Pagination from "../components/pagination/Pagination.vue";
-import PieChart from "../components/chart/PieChart.vue";
 
 const LIMIT = 6;
 const products = ref([]);
 const total = ref(0);
 const page = ref(1);
-const productStats = ref([0, 0, 0]);
 
 const changePage = (newPage) => {
   page.value = newPage;
@@ -29,17 +27,6 @@ watchEffect(async () => {
   if (response) {
     products.value = response.products;
     total.value = response.total;
-  }
-});
-
-watchEffect(async () => {
-  const res = await productService.getProductStats();
-  if (res) {
-    productStats.value = [
-      res.totalProducts - (res.lowStock + res.outOfStock),
-      res.outOfStock,
-      res.lowStock,
-    ];
   }
 });
 
@@ -80,11 +67,6 @@ watchEffect(async () => {
         :itemsPerPage="LIMIT"
         @onPageChange="changePage"
       />
-
-      <!-- Chart -->
-      <div class="mt-10">
-        <PieChart :data="productStats" />
-      </div>
     </section>
 
     <section class="mb-10 md:mb-20">

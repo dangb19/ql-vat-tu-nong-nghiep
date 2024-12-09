@@ -13,7 +13,7 @@ watchEffect(async () => {
     "stockQuantity",
     "asc",
     1,
-    15,
+    6,
     ""
   );
 
@@ -23,7 +23,7 @@ watchEffect(async () => {
 });
 
 watchEffect(async () => {
-  const response = await orderService.getOrders2("date", "desc", 1, 15, "");
+  const response = await orderService.getOrders2("date", "desc", 1, 8, "");
 
   if (response) {
     orders.value = response.orders;
@@ -35,22 +35,38 @@ watchEffect(async () => {
   <main class="text-gray-700">
     <!-- Section all products -->
     <section class="mb-10 md:mb-20">
-      <h1 class="text-xl text-gray-600 mb-4">@Tồn Kho</h1>
+      <div class="flex justify-between items-center text-xl text-gray-600 mb-4">
+        <h1>@Tồn Kho</h1>
+        <router-link
+          :to="{ name: 'inventory' }"
+          class="text-base hover:text-main-600"
+          >Xem thêm >>></router-link
+        >
+      </div>
       <ProductItems :products="products" />
     </section>
 
     <section v-if="orders" class="mb-10 md:mb-20">
-      <h2 class="text-xl text-gray-600 mb-4">@Đơn hàng chưa xử lý</h2>
-      <ul class="flex flex-wrap gap-4">
+      <div class="flex justify-between items-center text-xl text-gray-600 mb-4">
+        <h2>@Đơn hàng mới</h2>
+        <router-link
+          :to="{ name: 'order' }"
+          class="text-base hover:text-main-600"
+          >Xem thêm >>></router-link
+        >
+      </div>
+      <ul class="grid grid-cols-2 items-stretch lg:grid-cols-4 gap-4">
         <li
           v-for="order in orders"
           :key="order._id"
-          class="p-4 text-lg bg-gray-100"
+          class="aspect-video p-4 text-lg bg-gray-100"
         >
-          <router-link :to="{ name: 'order' }">
+          <router-link
+            :to="{ name: 'order-details', params: { id: order._id } }"
+          >
             <p>
               <span class="font-semibold">Đơn hàng của: </span
-              ><span class="font-light">{{ order.customerInfo[0].name }}</span>
+              ><span class="font-light">{{ order.customerInfo.name }}</span>
             </p>
             <p>
               <span class="font-semibold">Số tiền: </span

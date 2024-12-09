@@ -26,6 +26,16 @@ export function formatCurrency(value) {
   }).format(value);
 }
 
+export function isValidYear(input) {
+  if (!Number.isInteger(input)) {
+    return false;
+  }
+  if (input < 1000 || input > 9999) {
+    return false;
+  }
+  return true;
+}
+
 export function getDomainName(url) {
   const protocolSeparatorIndex = url.indexOf("://");
   let startIndex = 0;

@@ -12,9 +12,7 @@ const product = reactive({
   name: "",
   category: "",
   manufacturer: "",
-  supplier: "",
   price: "",
-  stockQuantity: "",
   discount: "",
   imageUrls: [],
   description: "",
@@ -62,13 +60,7 @@ watchEffect(fetchDatas);
           name="name"
           placeholder="tên sản phẩm"
           v-model="product.name"
-          required
-        />
-        <Input
-          type="number"
-          name="stockQuantity"
-          placeholder="số lượng"
-          v-model="product.stockQuantity"
+          classes="col-span-2"
           required
         />
         <Input
@@ -132,29 +124,12 @@ watchEffect(fetchDatas);
           </option>
         </select>
 
-        <select
-          v-if="datas?.suppliers"
-          name="supplier"
-          v-model="product.supplier"
-          placeholder="nhà cung cấp"
-          required
-          class="bg-yellow-100 py-3 px-4 text-gray-800 placeholder:text-gray-600 outline-none focus:outline-yellow-400 rounded-md"
-        >
-          <option disabled value="">chọn nhà cung cấp</option>
-          <option
-            v-for="supp in datas.suppliers"
-            :key="supp._id"
-            :value="supp._id"
-          >
-            {{ supp.name }}
-          </option>
-        </select>
         <Input
           type="text"
           name="imageUrls"
           placeholder="url hình ảnh"
           v-model="product.imageUrls[0]"
-          classes="col-span-2"
+          classes="col-span-3"
           required
         />
         <textarea

@@ -85,9 +85,6 @@ const closeModal = () => (show.value = false);
             </th>
             <th class="border border-gray-300 px-4 py-2 text-left">Địa chỉ</th>
             <th class="border border-gray-300 px-4 py-2 text-left">
-              Số đơn hàng
-            </th>
-            <th class="border border-gray-300 px-4 py-2 text-left">
               Hành động
             </th>
           </tr>
@@ -103,10 +100,18 @@ const closeModal = () => (show.value = false);
             <td class="border border-gray-300 px-4 py-2 break-words">
               {{ customer.address }}
             </td>
-            <td class="border border-gray-300 px-4 py-2 text-center">
-              {{ customer.orders.length }}
-            </td>
             <td class="border border-gray-300 px-4 py-2 space-x-2">
+              <router-link
+                :to="{
+                  name: 'customer-orders',
+                  params: {
+                    id: customer._id,
+                  },
+                }"
+                class="px-2 py-1 bg-yellow-400 text-gray-600 rounded hover:bg-yellow-500"
+              >
+                Lịch sử đơn hàng
+              </router-link>
               <router-link
                 :to="{ name: 'customer-update', params: { id: customer._id } }"
                 class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"

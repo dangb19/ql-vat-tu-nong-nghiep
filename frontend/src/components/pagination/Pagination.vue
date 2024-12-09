@@ -11,7 +11,6 @@ const props = defineProps({
 const currentPage = ref(1);
 
 const changeCurrentPage = (newPage) => {
-  console.log("newpage", newPage);
   emit("onPageChange", newPage);
   currentPage.value = newPage;
 };

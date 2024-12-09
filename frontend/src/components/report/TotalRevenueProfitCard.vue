@@ -18,7 +18,9 @@ defineProps({
       </div>
       <div class="p-2 text-center">
         <h3 class="text-xl">Lợi nhuận</h3>
-        <p class="text-2xl text-lime-500">{{ formatCurrency(totalProfit) }}</p>
+        <p class="text-2xl text-lime-500">
+          {{ formatCurrency(totalProfit) }}
+        </p>
       </div>
     </div>
   </div>
